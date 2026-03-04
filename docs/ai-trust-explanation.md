@@ -174,8 +174,8 @@ Every analysis includes an AI transparency section:
 ```json
 {
   "ai_analysis": {
-    "provider": "ollama",
-    "model": "llama3.1",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
     "raw_confidence": 0.87,
     "calibrated_confidence": 0.72,
     "weight_applied": 0.3,

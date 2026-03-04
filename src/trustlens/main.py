@@ -2,12 +2,17 @@
 TrustLens AI – FastAPI application entry-point.
 
 Run with:
-    uvicorn trustlens.main:app --reload
+    PYTHONPATH=src python3 -m uvicorn trustlens.main:app --host 0.0.0.0 --port 8000
+
+The LLM setup wizard runs automatically on first start.
 """
 
 from __future__ import annotations
 
+import os
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -197,5 +202,83 @@ def create_app() -> FastAPI:
 
     return app
 
+
+# ── Run wizard before creating the app ───────────────────────────────
+def _run_setup_wizard() -> None:
+    """
+    Run the interactive LLM setup wizard if:
+    - Not already completed (TRUSTLENS_WIZARD_DONE env var prevents re-run on --reload)
+    - If saved config exists and running in background → auto-continue
+    - If interactive foreground terminal → show the full wizard menu
+    """
+    # Skip if already done (reload guard)
+    if os.environ.get("TRUSTLENS_WIZARD_DONE") == "1":
+        return
+
+    root_dir = Path(__file__).resolve().parent.parent.parent  # TrustLens/
+    sys.path.insert(0, str(root_dir))
+
+    try:
+        from setup_wizard import run_wizard, _write_env, _read_env, _get_saved_config
+        import setup_wizard
+
+        # Point wizard at workspace root .env
+        setup_wizard.ENV_FILE = root_dir / ".env"
+
+        saved = _get_saved_config()
+
+        # Detect if we're truly in the foreground (can accept keyboard input)
+        is_foreground = False
+        if sys.stdin.isatty():
+            try:
+                # Check if our process group owns the terminal
+                fg_pgid = os.tcgetpgrp(sys.stdin.fileno())
+                is_foreground = fg_pgid == os.getpgrp()
+            except (OSError, AttributeError):
+                is_foreground = False
+
+        if not is_foreground:
+            # Background / non-interactive — auto-continue if saved config exists
+            if saved:
+                provider = saved["provider"]
+                model = saved.get("model", "default")
+                print(f"\033[92m▶  Auto-continuing with saved config: {provider.upper()} ({model})\033[0m")
+            else:
+                print("\033[93mNo LLM config found. Using default (gemini). Run in foreground to configure.\033[0m")
+            os.environ["TRUSTLENS_WIZARD_DONE"] = "1"
+            get_settings.cache_clear()
+            return
+
+        # Interactive foreground mode — run full wizard
+        config = run_wizard()
+        if config is None:
+            print("\033[91mSetup cancelled. Exiting.\033[0m")
+            sys.exit(1)
+
+        if config != "continue":
+            _write_env(config)
+            provider = config.get("TRUSTLENS_AI_PROVIDER", "unknown")
+        else:
+            env = _read_env()
+            provider = env.get("TRUSTLENS_AI_PROVIDER", "unknown")
+
+        # Mark wizard as done so --reload doesn't re-trigger it
+        os.environ["TRUSTLENS_WIZARD_DONE"] = "1"
+
+        # Clear settings cache so new .env values are picked up
+        get_settings.cache_clear()
+
+        print(f"\n\033[92m\033[1m{'═' * 50}\033[0m")
+        print(f"\033[92m\033[1m  🚀 Starting TrustLens AI with {provider.upper()}\033[0m")
+        print(f"\033[92m\033[1m{'═' * 50}\033[0m\n")
+
+    except ImportError:
+        # setup_wizard.py not found — skip silently (e.g. production deployment)
+        pass
+    except Exception as e:
+        print(f"\033[93mWizard skipped: {e}\033[0m")
+
+
+_run_setup_wizard()
 
 app = create_app()

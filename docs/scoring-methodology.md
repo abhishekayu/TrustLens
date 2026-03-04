@@ -318,7 +318,7 @@ Newly registered domains receive a penalty even if legitimate. This is a deliber
 
 ### 8.2 AI Provider Variance
 
-Different AI providers (Ollama/OpenAI/Anthropic) may produce slightly different confidence values. The calibration pipeline reduces this variance, but scores may differ by ±3% between providers.
+Different AI providers (Gemini/OpenAI/Anthropic/Grok) may produce slightly different confidence values. The calibration pipeline reduces this variance, but scores may differ by ±3% between providers.
 
 ### 8.3 Screenshot Database Coverage
 

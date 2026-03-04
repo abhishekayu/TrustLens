@@ -203,20 +203,21 @@ See [Anti-Hallucination Strategy](anti-hallucination.md) for the complete defens
 
 ### 5.2 AI Provider Security
 
-| Provider           | Data Transmission          | Privacy                          |
-| ------------------ | -------------------------- | -------------------------------- |
-| **Ollama (local)** | No data leaves the machine | Full privacy                     |
-| **OpenAI**         | HTTPS to OpenAI servers    | Subject to OpenAI data policy    |
-| **Anthropic**      | HTTPS to Anthropic servers | Subject to Anthropic data policy |
+| Provider       | Data Transmission          | Privacy                          |
+| -------------- | -------------------------- | -------------------------------- |
+| **Gemini**     | HTTPS to Google servers    | Subject to Google AI data policy |
+| **OpenAI**     | HTTPS to OpenAI servers    | Subject to OpenAI data policy    |
+| **Anthropic**  | HTTPS to Anthropic servers | Subject to Anthropic data policy |
+| **Grok (xAI)** | HTTPS to xAI servers       | Subject to xAI data policy       |
 
-**Recommendation:** Use Ollama for sensitive deployments where URLs should not leave the network.
+**Recommendation:** Review each provider's data retention policy before deploying with sensitive URLs.
 
 ### 5.3 Model Selection
 
 The AI model is configurable. Security considerations:
 
-- Local models (Ollama) eliminate data exfiltration risk
-- Cloud models may retain request data per provider policy
+- All supported providers transmit data over HTTPS
+- Review each provider's data retention policy
 - Model accuracy varies — use recommended models for best results
 
 ---
@@ -292,7 +293,7 @@ In-memory metrics collector tracks:
 ### Development
 
 - [ ] Use `.env` file (not committed to git)
-- [ ] Use Ollama for local AI
+- [ ] Configure AI provider API key
 - [ ] SQLite is fine
 
 ### Staging
@@ -309,7 +310,6 @@ In-memory metrics collector tracks:
 - [ ] Reverse proxy with TLS (nginx/Caddy)
 - [ ] Restrict CORS origins
 - [ ] PostgreSQL database
-- [ ] Private network for Ollama
 - [ ] Docker with network isolation
 - [ ] Log aggregation (ELK/Loki)
 - [ ] Monitoring and alerting
@@ -323,8 +323,7 @@ In-memory metrics collector tracks:
 1. **SQLite concurrency** — Single-writer limitation for high-throughput deployments (use PostgreSQL)
 2. **Screenshot storage** — File-based storage; consider object storage (S3) for scale
 3. **In-memory rate limits** — Lost on restart; consider Redis for persistence
-4. **No authentication for Ollama** — Ollama API has no built-in auth; network-isolate it
-5. **Community report trust** — Initial implementation uses fixed trust weights; ML-based reputation is planned
+4. **Community report trust** — Initial implementation uses fixed trust weights; ML-based reputation is planned
 
 ---
 

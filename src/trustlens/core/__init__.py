@@ -17,9 +17,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class AIProvider(str, Enum):
-    OLLAMA = "ollama"
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
+    GROK = "grok"
+    GEMINI = "gemini"
 
 
 class LogLevel(str, Enum):
@@ -51,16 +52,19 @@ class Settings(BaseSettings):
     db_url: str = "sqlite+aiosqlite:///./trustlens.db"
 
     # ── AI ──────────────────────────────────────────
-    ai_provider: AIProvider = AIProvider.OLLAMA
-
-    ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "llama3"
+    ai_provider: AIProvider = AIProvider.GEMINI
 
     openai_api_key: Optional[str] = None
     openai_model: str = "gpt-4o"
 
     anthropic_api_key: Optional[str] = None
     anthropic_model: str = "claude-sonnet-4-20250514"
+
+    grok_api_key: Optional[str] = None
+    grok_model: str = "grok-3"
+
+    gemini_api_key: Optional[str] = None
+    gemini_model: str = "gemini-2.5-flash"
 
     # ── Crawler / Security ──────────────────────────
     crawler_timeout: int = 30

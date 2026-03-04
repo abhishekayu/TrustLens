@@ -9,7 +9,7 @@ const sections = [
   {
     icon: Brain,
     title: 'AI as Advisor, Not Judge',
-    body: `The AI model (Ollama local, OpenAI, or Anthropic) reads extracted page content and provides a risk assessment. Its output is treated as one signal among many — never the final word. A raw 99 % AI confidence becomes ~18 % after calibration. This ensures no single model failure can dominate the score.`,
+    body: `The AI model (Gemini, OpenAI, Anthropic, or Grok) reads extracted page content and provides a risk assessment. Its output is treated as one signal among many — never the final word. A raw 99 % AI confidence becomes ~18 % after calibration. This ensures no single model failure can dominate the score.`,
   },
   {
     icon: Lock,

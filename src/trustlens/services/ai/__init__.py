@@ -8,7 +8,7 @@ Features:
 - Adversarial page content sanitisation before AI sees it
 - Multi-layer fallback strategy on AI failure
 - Deterministic, structured-only output contract
-- Provider registry for Ollama / OpenAI / Anthropic
+- Provider registry for OpenAI / Anthropic / Grok / Gemini
 """
 
 from __future__ import annotations
@@ -869,7 +869,8 @@ def get_ai_provider(provider_type: Optional[AIProvider] = None) -> BaseAIProvide
     # Import providers to trigger registration
     from trustlens.services.ai.providers import (  # noqa: F401
         anthropic_provider,
-        ollama_provider,
+        gemini_provider,
+        grok_provider,
         openai_provider,
     )
 

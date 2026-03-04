@@ -14,7 +14,6 @@
   <a href="https://fastapi.tiangolo.com"><img src="https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi&logoColor=white" alt="FastAPI"></a>
   <a href="https://react.dev"><img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License"></a>
-  <a href="https://ollama.com"><img src="https://img.shields.io/badge/Ollama-local%20AI-black?logo=ollama" alt="Ollama"></a>
   <img src="https://img.shields.io/badge/status-active%20development-brightgreen" alt="Status">
 </p>
 
@@ -44,7 +43,7 @@ We believe security verdicts must be **transparent, explainable, and verifiable*
 | -------------------------------- | ----------------------------------------------------------------------------------- |
 | **AI advises, rules decide**     | AI is capped at 30% influence. Deterministic rules control 70%.                     |
 | **Evidence over authority**      | Every signal includes raw evidence a human can independently verify.                |
-| **Privacy by default**           | Self-hostable. Local AI via Ollama. Your URLs never leave your infrastructure.      |
+| **Privacy by default**           | Self-hostable. Supports multiple AI providers. Your URLs stay under your control.   |
 | **Zero hallucination tolerance** | Multi-layer anti-hallucination pipeline prevents AI from fabricating evidence.      |
 | **Open by design**               | MIT licensed. Every algorithm, every weight, every threshold &mdash; all auditable. |
 
@@ -60,7 +59,7 @@ We believe security verdicts must be **transparent, explainable, and verifiable*
 <tr><td>Zero-day anomaly heuristics</td><td>No</td><td>No</td><td>No</td><td><strong>4-axis scoring</strong></td></tr>
 <tr><td>Community crowd reports</td><td>No</td><td>Yes</td><td>No</td><td><strong>Weighted consensus</strong></td></tr>
 <tr><td>Threat intel aggregation</td><td>N/A</td><td>Partial</td><td>Partial</td><td><strong>Multi-feed pipeline</strong></td></tr>
-<tr><td>Self-hosted / Local AI</td><td>No</td><td>No</td><td>No</td><td><strong>Ollama local</strong></td></tr>
+<tr><td>Multi-provider AI</td><td>No</td><td>No</td><td>No</td><td><strong>Gemini, Grok, OpenAI, Anthropic</strong></td></tr>
 <tr><td>Enterprise brand monitoring</td><td>No</td><td>No</td><td>Partial</td><td><strong>Webhook alerts</strong></td></tr>
 <tr><td>Anti-hallucination pipeline</td><td>N/A</td><td>N/A</td><td>N/A</td><td><strong>Multi-layer defense</strong></td></tr>
 <tr><td>Full audit logging</td><td>No</td><td>Partial</td><td>No</td><td><strong>Structured events</strong></td></tr>
@@ -106,7 +105,7 @@ We believe security verdicts must be **transparent, explainable, and verifiable*
 | |Playwrt ||Analysis||  AI  ||Screen- ||Zero-Day  ||Threat  ||Community |     |
 | |Crawler ||Pipeline||Provdr||shot    ||Suspicion ||Intel   ||Consensus |     |
 | |(sandbox||        ||      ||Similar.||Scorer    ||Feeds   ||          |     |
-| |)       ||  Rules ||Ollama|+--------++----------++--------++----------+     |
+| |)       ||  Rules ||Gemini|+--------++----------++--------++----------+     |
 | +--------+|  Brand ||OpenAI|                                                 |
 |           |  Behav.||Anthr.|    +--------------------------+                 |
 |           |  Domain|+------+    |  Enterprise Monitoring   |                 |
@@ -179,7 +178,7 @@ After the core 70/30 calculation, hard-evidence signals apply additional adjustm
 
 - Python 3.11+
 - Node.js 18+ (for React dashboard)
-- [Ollama](https://ollama.com) (for local AI &mdash; optional but recommended)
+- An AI provider API key (Gemini, OpenAI, Anthropic, or Grok)
 
 ### 1. Clone and Install Backend
 
@@ -203,7 +202,7 @@ playwright install chromium
 
 ```bash
 cp .env.example .env
-# Edit .env - defaults work for local Ollama
+# Edit .env - configure your AI provider
 ```
 
 ### 3. Start Backend
@@ -225,51 +224,50 @@ npm run dev
 
 ---
 
-## Local LLM Setup (Ollama)
+## AI Provider Setup
 
-TrustLens is designed to run **entirely offline** using local AI models via Ollama.
+TrustLens supports multiple AI providers. Run the interactive setup wizard or configure manually.
 
-### Install Ollama
-
-```bash
-# macOS
-brew install ollama
-
-# Linux
-curl -fsSL https://ollama.com/install.sh | sh
-
-# Start the server
-ollama serve
-```
-
-### Pull a Model
+### Interactive Setup
 
 ```bash
-# Recommended: Llama 3.1 (4.7 GB, best JSON compliance)
-ollama pull llama3.1
-
-# Alternative: Mistral (lighter)
-ollama pull mistral
+python setup_wizard.py
+# Or simply start the backend — the wizard runs automatically on first launch
+uvicorn trustlens.main:app --reload --port 8000
 ```
 
-### Configure TrustLens
+### Manual Configuration
 
 ```env
-TRUSTLENS_AI_PROVIDER=ollama
-TRUSTLENS_OLLAMA_BASE_URL=http://localhost:11434
-TRUSTLENS_OLLAMA_MODEL=llama3.1
+# Gemini (default)
+TRUSTLENS_AI_PROVIDER=gemini
+TRUSTLENS_GEMINI_API_KEY=your-key
+TRUSTLENS_GEMINI_MODEL=gemini-2.5-flash
+
+# OpenAI
+TRUSTLENS_AI_PROVIDER=openai
+TRUSTLENS_OPENAI_API_KEY=your-key
+TRUSTLENS_OPENAI_MODEL=gpt-4o
+
+# Anthropic
+TRUSTLENS_AI_PROVIDER=anthropic
+TRUSTLENS_ANTHROPIC_API_KEY=your-key
+TRUSTLENS_ANTHROPIC_MODEL=claude-sonnet-4-20250514
+
+# Grok (xAI)
+TRUSTLENS_AI_PROVIDER=grok
+TRUSTLENS_GROK_API_KEY=your-key
+TRUSTLENS_GROK_MODEL=grok-3-mini
 ```
 
-### Recommended Models
+### Supported Providers
 
-| Model                | Size   | VRAM  | JSON Quality | Best For                     |
-| -------------------- | ------ | ----- | ------------ | ---------------------------- |
-| `llama3.1` (8B)      | 4.7 GB | 6 GB  | Excellent    | Default &mdash; best balance |
-| `mistral-nemo` (12B) | 7.1 GB | 10 GB | Excellent    | Higher accuracy              |
-| `mistral` (7B)       | 4.1 GB | 6 GB  | Good         | Low VRAM systems             |
-| `gemma2` (9B)        | 5.4 GB | 8 GB  | Good         | Google ecosystem             |
-
-> **Full guide:** See [docs/LOCAL_LLM_SETUP.md](docs/LOCAL_LLM_SETUP.md) for GPU tuning, fallback strategies, and troubleshooting.
+| Provider      | Model Example              | Best For                        |
+| ------------- | -------------------------- | ------------------------------- |
+| **Gemini**    | `gemini-2.5-flash`         | Default &mdash; fast & accurate |
+| **OpenAI**    | `gpt-4o`                   | Highest accuracy                |
+| **Anthropic** | `claude-sonnet-4-20250514` | Strong reasoning                |
+| **Grok**      | `grok-3-mini`              | xAI ecosystem                   |
 
 ---
 
@@ -308,16 +306,6 @@ services:
       - backend
     environment:
       - VITE_API_URL=http://backend:8000
-
-  ollama:
-    image: ollama/ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-
-volumes:
-  ollama_data:
 ```
 
 ### Production Checklist
@@ -456,7 +444,7 @@ The React frontend provides a modern, real-time interface for TrustLens.
 - [x] Enterprise brand monitoring stubs
 - [x] Observability, audit logging, metrics
 - [x] React dashboard with real-time scanning
-- [x] Local AI via Ollama (fully offline)
+- [x] Multi-provider AI support (Gemini, OpenAI, Anthropic, Grok)
 - [x] Docker deployment
 
 ### v0.3 - Intelligence Expansion
@@ -521,7 +509,7 @@ TrustLens/
     services/
       orchestrator.py              Analysis pipeline coordinator
       scoring/                     70/30 hybrid scoring engine
-      ai/providers/                Ollama, OpenAI, Anthropic
+      ai/providers/                Gemini, OpenAI, Anthropic, Grok
       analysis/                    9 analysis modules
       community/                   Community reporting
       threat_intel/                Feed parsers + ingestion
@@ -531,7 +519,6 @@ TrustLens/
     ai-trust-explanation.md        AI trust model
     security-model.md              Security architecture
     anti-hallucination.md          Anti-hallucination strategy
-    LOCAL_LLM_SETUP.md             Ollama setup guide
   Dockerfile
   docker-compose.yml
   requirements.txt
@@ -550,31 +537,33 @@ All settings via environment variables (prefix `TRUSTLENS_`):
 <details>
 <summary><strong>Full Configuration Table</strong></summary>
 
-| Variable                                    | Default                              | Description                |
-| ------------------------------------------- | ------------------------------------ | -------------------------- |
-| `TRUSTLENS_HOST`                            | `0.0.0.0`                            | Server bind address        |
-| `TRUSTLENS_PORT`                            | `8000`                               | Server port                |
-| `TRUSTLENS_DEBUG`                           | `false`                              | Debug mode                 |
-| `TRUSTLENS_LOG_LEVEL`                       | `info`                               | Logging level              |
-| `TRUSTLENS_DB_URL`                          | `sqlite+aiosqlite:///./trustlens.db` | Database URL               |
-| `TRUSTLENS_AI_PROVIDER`                     | `ollama`                             | AI provider                |
-| `TRUSTLENS_OLLAMA_BASE_URL`                 | `http://localhost:11434`             | Ollama server URL          |
-| `TRUSTLENS_OLLAMA_MODEL`                    | `llama3`                             | Ollama model name          |
-| `TRUSTLENS_OPENAI_API_KEY`                  | -                                    | OpenAI API key             |
-| `TRUSTLENS_OPENAI_MODEL`                    | `gpt-4o`                             | OpenAI model               |
-| `TRUSTLENS_ANTHROPIC_API_KEY`               | -                                    | Anthropic API key          |
-| `TRUSTLENS_ANTHROPIC_MODEL`                 | `claude-sonnet-4-20250514`           | Anthropic model            |
-| `TRUSTLENS_RATE_LIMIT_REQUESTS`             | `30`                                 | Max requests per window    |
-| `TRUSTLENS_RATE_LIMIT_WINDOW_SECONDS`       | `60`                                 | Rate limit window          |
-| `TRUSTLENS_SCORE_WEIGHT_RULES`              | `0.70`                               | Rule-based score weight    |
-| `TRUSTLENS_SCORE_WEIGHT_AI`                 | `0.30`                               | AI advisory score weight   |
-| `TRUSTLENS_API_KEY_REQUIRED`                | `false`                              | Require API keys           |
-| `TRUSTLENS_THREAT_FEED_URLS`                | -                                    | Comma-separated feed URLs  |
-| `TRUSTLENS_THREAT_FEED_REFRESH_HOURS`       | `6`                                  | Feed refresh interval      |
-| `TRUSTLENS_SCREENSHOT_SIMILARITY_THRESHOLD` | `0.85`                               | Visual clone threshold     |
-| `TRUSTLENS_COMMUNITY_REPORTS_ENABLED`       | `true`                               | Enable community reports   |
-| `TRUSTLENS_ENTERPRISE_MODE`                 | `false`                              | Enable enterprise features |
-| `TRUSTLENS_AUDIT_LOG_ENABLED`               | `true`                               | Enable audit logging       |
+| Variable                                    | Default                              | Description                                |
+| ------------------------------------------- | ------------------------------------ | ------------------------------------------ |
+| `TRUSTLENS_HOST`                            | `0.0.0.0`                            | Server bind address                        |
+| `TRUSTLENS_PORT`                            | `8000`                               | Server port                                |
+| `TRUSTLENS_DEBUG`                           | `false`                              | Debug mode                                 |
+| `TRUSTLENS_LOG_LEVEL`                       | `info`                               | Logging level                              |
+| `TRUSTLENS_DB_URL`                          | `sqlite+aiosqlite:///./trustlens.db` | Database URL                               |
+| `TRUSTLENS_AI_PROVIDER`                     | `gemini`                             | AI provider (gemini/openai/anthropic/grok) |
+| `TRUSTLENS_GEMINI_API_KEY`                  | -                                    | Gemini API key                             |
+| `TRUSTLENS_GEMINI_MODEL`                    | `gemini-2.5-flash`                   | Gemini model                               |
+| `TRUSTLENS_OPENAI_API_KEY`                  | -                                    | OpenAI API key                             |
+| `TRUSTLENS_OPENAI_MODEL`                    | `gpt-4o`                             | OpenAI model                               |
+| `TRUSTLENS_ANTHROPIC_API_KEY`               | -                                    | Anthropic API key                          |
+| `TRUSTLENS_ANTHROPIC_MODEL`                 | `claude-sonnet-4-20250514`           | Anthropic model                            |
+| `TRUSTLENS_GROK_API_KEY`                    | -                                    | Grok (xAI) API key                         |
+| `TRUSTLENS_GROK_MODEL`                      | `grok-3-mini`                        | Grok model                                 |
+| `TRUSTLENS_RATE_LIMIT_REQUESTS`             | `30`                                 | Max requests per window                    |
+| `TRUSTLENS_RATE_LIMIT_WINDOW_SECONDS`       | `60`                                 | Rate limit window                          |
+| `TRUSTLENS_SCORE_WEIGHT_RULES`              | `0.70`                               | Rule-based score weight                    |
+| `TRUSTLENS_SCORE_WEIGHT_AI`                 | `0.30`                               | AI advisory score weight                   |
+| `TRUSTLENS_API_KEY_REQUIRED`                | `false`                              | Require API keys                           |
+| `TRUSTLENS_THREAT_FEED_URLS`                | -                                    | Comma-separated feed URLs                  |
+| `TRUSTLENS_THREAT_FEED_REFRESH_HOURS`       | `6`                                  | Feed refresh interval                      |
+| `TRUSTLENS_SCREENSHOT_SIMILARITY_THRESHOLD` | `0.85`                               | Visual clone threshold                     |
+| `TRUSTLENS_COMMUNITY_REPORTS_ENABLED`       | `true`                               | Enable community reports                   |
+| `TRUSTLENS_ENTERPRISE_MODE`                 | `false`                              | Enable enterprise features                 |
+| `TRUSTLENS_AUDIT_LOG_ENABLED`               | `true`                               | Enable audit logging                       |
 
 </details>
 
@@ -588,8 +577,8 @@ All settings via environment variables (prefix `TRUSTLENS_`):
 | [AI Trust Explanation](docs/ai-trust-explanation.md)      | How AI is constrained and why                         |
 | [Security Model](docs/security-model.md)                  | SSRF protection, sandboxing, threat model             |
 | [Anti-Hallucination Strategy](docs/anti-hallucination.md) | Multi-layer defense against AI fabrication            |
-| [Local LLM Setup](docs/LOCAL_LLM_SETUP.md)                | Complete Ollama guide with hardware requirements      |
-| [Contributing](CONTRIBUTING.md)                           | How to contribute to TrustLens                        |
+
+| [Contributing](CONTRIBUTING.md) | How to contribute to TrustLens |
 
 ---
 

@@ -338,7 +338,7 @@ What should happen instead.
 - OS: macOS 14.2
 - Python: 3.12.1
 - TrustLens: v0.2.0
-- AI Provider: Ollama (llama3.1)
+- AI Provider: Gemini (gemini-2.5-flash)
 
 **Logs**
 ```

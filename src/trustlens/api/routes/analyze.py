@@ -510,10 +510,12 @@ def _build_deep_dive(analysis: URLAnalysis) -> DeepDiveData:
 
 def _get_ai_model_name(settings) -> str:
     """Get the model name based on the configured AI provider."""
-    if settings.ai_provider.value == "ollama":
-        return settings.ollama_model
-    elif settings.ai_provider.value == "openai":
+    if settings.ai_provider.value == "openai":
         return settings.openai_model
     elif settings.ai_provider.value == "anthropic":
         return settings.anthropic_model
+    elif settings.ai_provider.value == "grok":
+        return settings.grok_model
+    elif settings.ai_provider.value == "gemini":
+        return settings.gemini_model
     return "unknown"
