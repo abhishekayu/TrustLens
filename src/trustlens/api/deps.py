@@ -18,6 +18,7 @@ from trustlens.db import (
     ThreatIntelRepository,
 )
 from trustlens.services.orchestrator import AnalysisOrchestrator
+from trustlens.services.analysis.screenshot_similarity import ScreenshotSimilarityEngine
 from trustlens.services.queue import AsyncTaskQueue
 
 # ── Singletons (set during app startup) ──────────────────────────────────────
@@ -91,11 +92,27 @@ def get_task_queue() -> AsyncTaskQueue:
 
 def get_orchestrator() -> AnalysisOrchestrator:
     db = get_db()
-    return AnalysisOrchestrator(
+    orch = AnalysisOrchestrator(
         db=db,
         analysis_repo=AnalysisRepository(db),
         brand_repo=BrandRepository(db),
     )
+
+    # Wire up Phase 5 services
+    screenshot_repo = ScreenshotHashRepository(db)
+    screenshot_engine = ScreenshotSimilarityEngine()
+    orch.set_screenshot_engine(screenshot_engine)
+
+    if _threat_intel_service is not None:
+        orch.set_threat_intel(_threat_intel_service)
+
+    if _community_service is not None:
+        orch.set_community(_community_service)
+
+    if _brand_monitor_service is not None:
+        orch.set_enterprise(_brand_monitor_service)
+
+    return orch
 
 
 def get_community_service():

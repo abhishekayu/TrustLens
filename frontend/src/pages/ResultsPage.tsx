@@ -165,7 +165,7 @@ export default function ResultsPage() {
       {/* Deep Dive — full transparency panel */}
       {result.deep_dive && (
         <div className="mb-8">
-          <DeepDive data={result.deep_dive} />
+          <DeepDive data={result.deep_dive} analysisId={result.analysis_id} />
         </div>
       )}
 

@@ -60,6 +60,7 @@ export interface CrawlDetails {
   meta_tags: Record<string, string>
   cookies_count: number
   screenshot_path: string | null
+  screenshot_url: string | null
   errors: string[]
 }
 
@@ -129,7 +130,22 @@ export interface AIAnalysisSummary {
 export interface ZeroDaySuspicion {
   suspicion_score: number
   anomaly_signals: string[]
+  language_anomaly_score: number
+  structural_anomaly_score: number
+  behavioral_anomaly_score: number
+  domain_novelty_score: number
   is_potential_zeroday: boolean
+}
+
+export interface ScreenshotSimilarityResult {
+  phash: string
+  dhash: string
+  closest_brand: string | null
+  closest_brand_distance: number
+  similarity_score: number
+  is_visual_clone: boolean
+  matched_screenshots: string[]
+  signals: string[]
 }
 
 export interface ThreatIntelResult {
@@ -164,10 +180,10 @@ export interface DeepDiveData {
   brand_matches: BrandMatchSummary[]
   security_headers: SecurityHeadersSummary | null
   ai_analysis: AIAnalysisSummary | null
-  screenshot_similarity: { is_visual_clone: boolean; closest_brand: string | null; similarity_score: number; signals: string[] } | null
+  screenshot_similarity: ScreenshotSimilarityResult | null
   zeroday_suspicion: ZeroDaySuspicion | null
   threat_intel: ThreatIntelResult | null
-  community_consensus: { url_or_domain: string; total_reports: number; crowd_risk_score: number } | null
+  community_consensus: { url_or_domain: string; total_reports: number; phishing_reports: number; safe_reports: number; scam_reports: number; crowd_risk_score: number; consensus_confidence: number; last_report_at: string | null } | null
   behavioral_signals: BehavioralSignal[]
   rule_signals: RuleSignal[]
 }

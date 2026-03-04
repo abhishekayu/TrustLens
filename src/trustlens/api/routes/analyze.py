@@ -6,8 +6,10 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import FileResponse
 
 from trustlens.core import get_settings
 from trustlens.core.logging import get_logger
@@ -138,6 +140,36 @@ async def get_analysis(
         error=analysis.error,
         pipeline_steps=pipeline_steps,
         deep_dive=deep_dive,
+    )
+
+
+# ── Screenshot serving ───────────────────────────────────────────────────────
+
+
+@router.get(
+    "/analysis/{analysis_id}/screenshot",
+    summary="Get the crawl screenshot for an analysis",
+)
+async def get_screenshot(
+    analysis_id: str,
+    repo: AnalysisRepository = Depends(get_analysis_repo),
+):
+    """Return the screenshot image captured during crawl."""
+    analysis = await repo.get_by_id(analysis_id)
+    if analysis is None:
+        raise HTTPException(status_code=404, detail="Analysis not found")
+
+    screenshot_path = None
+    if analysis.crawl_result and analysis.crawl_result.screenshot_path:
+        screenshot_path = analysis.crawl_result.screenshot_path
+
+    if not screenshot_path or not Path(screenshot_path).exists():
+        raise HTTPException(status_code=404, detail="Screenshot not available")
+
+    return FileResponse(
+        screenshot_path,
+        media_type="image/png",
+        filename=f"screenshot-{analysis_id}.png",
     )
 
 
@@ -363,6 +395,11 @@ def _build_deep_dive(analysis: URLAnalysis) -> DeepDiveData:
     crawl = None
     if analysis.crawl_result is not None:
         cr = analysis.crawl_result
+        # Build screenshot URL if screenshot exists
+        screenshot_url = None
+        if cr.screenshot_path and Path(cr.screenshot_path).exists():
+            screenshot_url = f"/api/v1/analysis/{analysis.id}/screenshot"
+
         crawl = CrawlDetails(
             final_url=cr.final_url,
             status_code=cr.status_code,
@@ -379,6 +416,7 @@ def _build_deep_dive(analysis: URLAnalysis) -> DeepDiveData:
             meta_tags=cr.meta_tags,
             cookies_count=len(cr.cookies),
             screenshot_path=cr.screenshot_path,
+            screenshot_url=screenshot_url,
             errors=cr.errors,
         )
 

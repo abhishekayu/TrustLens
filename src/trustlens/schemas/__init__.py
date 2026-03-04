@@ -185,6 +185,7 @@ class CrawlDetails(BaseModel):
     meta_tags: dict[str, str] = Field(default_factory=dict)
     cookies_count: int = 0
     screenshot_path: Optional[str] = None
+    screenshot_url: Optional[str] = None
     errors: list[str] = Field(default_factory=list)
 
 
