@@ -92,8 +92,11 @@ class CrawlerService:
                     timeout=self._settings.crawler_timeout * 1000,
                 )
 
-                # Wait briefly for dynamic content
-                await page.wait_for_timeout(2000)
+                # ── Intelligent page-load waiting ────────────────
+                # Many websites show a loading/splash screen first.
+                # We use a multi-strategy wait to ensure we capture
+                # the actual page content, not a loader.
+                await self._wait_for_page_ready(page)
 
                 status_code = response.status if response else 0
                 final_url = page.url
@@ -195,9 +198,13 @@ class CrawlerService:
                     ssl_info["cert_error_ignored"] = True
 
                 # Screenshot — capture in-memory as base64 (no disk storage)
+                # Wait a final moment for any lazy-loaded images/content
+                # and scroll to top for a clean viewport capture
                 screenshot_path: Optional[str] = None
                 screenshot_base64: Optional[str] = None
                 try:
+                    await page.evaluate("window.scrollTo(0, 0)")
+                    await page.wait_for_timeout(500)
                     raw_bytes = await page.screenshot(full_page=False)
                     import base64 as _b64
                     screenshot_base64 = "data:image/png;base64," + _b64.b64encode(raw_bytes).decode()
@@ -332,6 +339,64 @@ class CrawlerService:
             logger.warning("crawler.ssl_extraction_failed", hostname=hostname, error=str(e))
 
         return info
+
+    async def _wait_for_page_ready(self, page: Any) -> None:
+        """
+        Intelligent page-load waiting strategy.
+
+        Many modern websites show a loading/splash screen before the
+        real content renders. This method uses multiple strategies to
+        wait for the actual page content:
+
+        1. Wait for network to be mostly idle (no in-flight requests)
+        2. Wait for common loading indicators to disappear
+        3. Wait for the document.readyState to be 'complete'
+        4. Small extra buffer for late-firing JS
+
+        Total timeout cap: ~10 seconds to ensure real content loads.
+        """
+        MAX_WAIT = 10000  # ms — absolute cap
+
+        # Strategy 1: Wait for networkidle (max 7s)
+        try:
+            await page.wait_for_load_state("networkidle", timeout=7000)
+            logger.debug("crawler.wait_networkidle_ok")
+        except Exception:
+            logger.debug("crawler.wait_networkidle_timeout")
+
+        # Strategy 2: Wait for common loading overlays / spinners to vanish
+        # These are CSS selectors commonly used by SPAs and loading screens
+        loading_selectors = [
+            ".loading", ".loader", ".spinner", "#loading",
+            "[class*='loading']", "[class*='spinner']",
+            ".splash-screen", "#splash", ".preloader",
+            "[class*='preload']", ".sk-spinner",
+            ".pace", ".nprogress",
+        ]
+        for selector in loading_selectors:
+            try:
+                locator = page.locator(selector)
+                if await locator.count() > 0:
+                    # Found a loading indicator — wait for it to disappear
+                    await locator.first.wait_for(state="hidden", timeout=6000)
+                    logger.debug("crawler.loading_indicator_cleared", selector=selector)
+                    break
+            except Exception:
+                continue
+
+        # Strategy 3: Wait for document.readyState === 'complete'
+        try:
+            await page.wait_for_function(
+                "document.readyState === 'complete'",
+                timeout=5000,
+            )
+        except Exception:
+            pass
+
+        # Strategy 4: Buffer for late-firing JS (React hydration, SPA routing, etc.)
+        await page.wait_for_timeout(3000)
+
+        logger.info("crawler.page_ready")
 
     async def _take_screenshot(self, page: Any, url: str) -> Optional[str]:
         """Capture a screenshot and return the file path."""
