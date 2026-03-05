@@ -13,6 +13,14 @@
   <em>Drop any URL → get an instant, transparent trust score backed by 15+ analysis engines, AI deception classification, and full evidence breakdown.</em>
 </p>
 
+<p align="center">
+  <img src="docs/assets/scan-page.png" alt="TrustLens Scan Page" width="720" />
+</p>
+
+<p align="center">
+  <img src="docs/assets/results-page.png" alt="TrustLens Results Page" width="720" />
+</p>
+
 ---
 
 ## Table of Contents
@@ -553,6 +561,10 @@ git checkout -b feature/your-feature
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 ---
+
+<p align="center">
+  <img src="docs/assets/developer-info.png" alt="Designed & Developed by Abhishek Verma" width="520" />
+</p>
 
 <p align="center">
   <sub>Built by <a href="https://github.com/abhishekayu">Abhishek Verma</a></sub>
