@@ -9,7 +9,6 @@ interface ParsedSignal {
 }
 
 function parseSignals(raw: string): ParsedSignal[] {
-  // signals_summary is typically a multi-line or semicolon-separated string
   const lines = raw.split(/[;\n]/).map(s => s.trim()).filter(Boolean)
   return lines.map(line => {
     const severity = (() => {
@@ -30,17 +29,24 @@ function parseSignals(raw: string): ParsedSignal[] {
 }
 
 const severityColors = {
-  safe: 'bg-green-500',
-  low: 'bg-yellow-500',
-  medium: 'bg-orange-500',
-  high: 'bg-red-500',
+  safe: 'bg-[#00ff41]',
+  low: 'bg-[#ffff00]',
+  medium: 'bg-[#ff8c00]',
+  high: 'bg-[#ff0040]',
+}
+
+const severityBorder = {
+  safe: 'border-[#00ff41]/15',
+  low: 'border-[#ffff00]/15',
+  medium: 'border-[#ff8c00]/15',
+  high: 'border-[#ff0040]/15',
 }
 
 const severityBg = {
-  safe: 'bg-green-500/10 border-green-500/20',
-  low: 'bg-yellow-500/10 border-yellow-500/20',
-  medium: 'bg-orange-500/10 border-orange-500/20',
-  high: 'bg-red-500/10 border-red-500/20',
+  safe: 'bg-[#00ff41]/[0.03]',
+  low: 'bg-[#ffff00]/[0.03]',
+  medium: 'bg-[#ff8c00]/[0.03]',
+  high: 'bg-[#ff0040]/[0.03]',
 }
 
 export default function EvidenceTimeline({ signals }: EvidenceTimelineProps) {
@@ -50,22 +56,24 @@ export default function EvidenceTimeline({ signals }: EvidenceTimelineProps) {
   if (parsed.length === 0) return null
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Evidence Timeline</h3>
-      <div className="space-y-2">
+    <div className="space-y-2.5">
+      <h3 className="font-mono text-[10px] font-semibold text-[#484f58] uppercase tracking-widest flex items-center gap-2">
+        <span className="text-[#00ff41]/40">{'>'}</span> Evidence Timeline
+      </h3>
+      <div className="space-y-1.5">
         {parsed.map((signal, i) => (
           <div
             key={i}
-            className={`flex items-start gap-3 p-3 rounded-lg border ${severityBg[signal.severity]} animate-fade-in`}
+            className={`flex items-start gap-3 p-2.5 rounded border ${severityBorder[signal.severity]} ${severityBg[signal.severity]} animate-fade-in`}
             style={{ animationDelay: `${i * 60}ms` }}
           >
-            <div className="flex flex-col items-center mt-1">
-              <div className={`w-2.5 h-2.5 rounded-full ${severityColors[signal.severity]}`} />
-              {i < parsed.length - 1 && <div className="w-px h-6 bg-gray-700 mt-1" />}
+            <div className="flex flex-col items-center mt-1.5">
+              <div className={`w-2 h-2 rounded-full ${severityColors[signal.severity]}`} style={{ boxShadow: `0 0 6px currentColor` }} />
+              {i < parsed.length - 1 && <div className="w-px h-5 bg-[#1b2838] mt-1" />}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-200">{signal.label}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{signal.detail}</p>
+              <p className="font-mono text-xs font-medium text-[#c9d1d9]">{signal.label}</p>
+              <p className="font-mono text-[10px] text-[#484f58] mt-0.5">{signal.detail}</p>
             </div>
           </div>
         ))}

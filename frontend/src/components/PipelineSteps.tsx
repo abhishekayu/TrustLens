@@ -41,31 +41,30 @@ const STEP_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: 'text-gray-600',
-  running: 'text-sky-400',
-  done: 'text-emerald-400',
-  failed: 'text-red-400',
-  skipped: 'text-gray-500',
+  pending: 'text-[#484f58]',
+  running: 'text-[#00ffff]',
+  done: 'text-[#00ff41]',
+  failed: 'text-[#ff0040]',
+  skipped: 'text-[#484f58]/50',
 }
 
 function StatusIcon({ status }: { status: string }) {
   switch (status) {
     case 'done':
-      return <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+      return <CheckCircle2 className="w-3.5 h-3.5 text-[#00ff41] shrink-0" />
     case 'running':
-      return <Loader2 className="w-4 h-4 text-sky-400 animate-spin shrink-0" />
+      return <Loader2 className="w-3.5 h-3.5 text-[#00ffff] animate-spin shrink-0" />
     case 'failed':
-      return <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+      return <XCircle className="w-3.5 h-3.5 text-[#ff0040] shrink-0" />
     case 'skipped':
-      return <SkipForward className="w-4 h-4 text-gray-500 shrink-0" />
+      return <SkipForward className="w-3.5 h-3.5 text-[#484f58]/50 shrink-0" />
     default:
-      return <Circle className="w-4 h-4 text-gray-600 shrink-0" />
+      return <Circle className="w-3.5 h-3.5 text-[#484f58] shrink-0" />
   }
 }
 
 interface Props {
   steps: PipelineStep[]
-  /** When true, show full detail view; when false (during polling), compact */
   expanded?: boolean
 }
 
@@ -84,77 +83,77 @@ export default function PipelineSteps({ steps, expanded = false }: Props) {
   const summary = summaryParts.join(' · ') || 'Waiting…'
 
   return (
-    <div className="bg-gray-900/60 border border-gray-800 rounded-xl overflow-hidden">
-      {/* Header – always visible */}
+    <div className="terminal-card">
+      {/* Header */}
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-5 py-3 hover:bg-gray-800/40 transition"
+        className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-white/[0.02] transition"
       >
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">
-            Pipeline Steps
+          <span className="font-mono text-[10px] text-[#00ff41]/50">$</span>
+          <h3 className="font-mono text-xs font-semibold text-[#c9d1d9] uppercase tracking-wider">
+            Pipeline
           </h3>
-          <span className="text-xs text-gray-500">
+          <span className="font-mono text-[10px] text-[#484f58]">
             {summary} ({doneCount}/{total})
           </span>
         </div>
         {open ? (
-          <ChevronDown className="w-4 h-4 text-gray-500" />
+          <ChevronDown className="w-3.5 h-3.5 text-[#484f58]" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-gray-500" />
+          <ChevronRight className="w-3.5 h-3.5 text-[#484f58]" />
         )}
       </button>
 
       {/* Progress bar */}
-      <div className="h-0.5 bg-gray-800">
+      <div className="h-px bg-[#1b2838]">
         <div
-          className="h-full bg-gradient-to-r from-sky-500 to-emerald-400 transition-all duration-500 ease-out"
-          style={{ width: `${total > 0 ? (doneCount / total) * 100 : 0}%` }}
+          className="h-full transition-all duration-500 ease-out"
+          style={{
+            width: `${total > 0 ? (doneCount / total) * 100 : 0}%`,
+            background: 'linear-gradient(90deg, #00ff41, #00ffff)',
+            boxShadow: '0 0 8px rgba(0,255,65,0.3)',
+          }}
         />
       </div>
 
       {/* Steps list */}
       {open && (
-        <div className="divide-y divide-gray-800/60">
+        <div className="divide-y divide-[#1b2838]/60">
           {steps.map(step => {
             const Icon = STEP_ICONS[step.name] || ShieldCheck
             return (
               <div
                 key={step.name}
-                className={`flex items-start gap-3 px-5 py-2.5 transition ${
+                className={`flex items-start gap-3 px-4 py-2 transition font-mono ${
                   step.status === 'running'
-                    ? 'bg-sky-500/5'
+                    ? 'bg-[#00ffff]/[0.03]'
                     : step.status === 'failed'
-                      ? 'bg-red-500/5'
+                      ? 'bg-[#ff0040]/[0.03]'
                       : ''
                 }`}
               >
-                {/* Left: step icon */}
-                <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${STATUS_COLORS[step.status] || 'text-gray-600'}`} />
-
-                {/* Center: label + detail */}
+                <Icon className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${STATUS_COLORS[step.status] || 'text-[#484f58]'}`} />
                 <div className="flex-1 min-w-0">
                   <p
-                    className={`text-sm font-medium ${
+                    className={`text-xs font-medium ${
                       step.status === 'running'
-                        ? 'text-sky-300'
+                        ? 'text-[#00ffff]'
                         : step.status === 'done'
-                          ? 'text-gray-300'
+                          ? 'text-[#c9d1d9]'
                           : step.status === 'failed'
-                            ? 'text-red-300'
-                            : 'text-gray-500'
+                            ? 'text-[#ff0040]'
+                            : 'text-[#484f58]'
                     }`}
                   >
                     {step.label}
                   </p>
                   {step.detail && (
-                    <p className="text-xs text-gray-500 mt-0.5 truncate" title={step.detail}>
+                    <p className="text-[10px] text-[#484f58] mt-0.5 truncate" title={step.detail}>
                       {step.detail}
                     </p>
                   )}
                 </div>
-
-                {/* Right: status icon */}
                 <StatusIcon status={step.status} />
               </div>
             )

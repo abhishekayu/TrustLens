@@ -4,24 +4,30 @@ interface ScoreGaugeProps {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 75) return '#22c55e'
-  if (score >= 50) return '#eab308'
-  if (score >= 25) return '#f97316'
-  return '#ef4444'
+  if (score >= 75) return '#00ff41'
+  if (score >= 50) return '#ffff00'
+  if (score >= 25) return '#ff8c00'
+  return '#ff0040'
 }
 
 function getRiskLabel(score: number): string {
-  if (score >= 75) return 'Safe'
-  if (score >= 50) return 'Low Risk'
-  if (score >= 25) return 'Suspicious'
-  return 'High Risk'
+  if (score >= 75) return 'SAFE'
+  if (score >= 50) return 'LOW RISK'
+  if (score >= 25) return 'SUSPICIOUS'
+  return 'HIGH RISK'
+}
+
+function getGlowClass(score: number): string {
+  if (score >= 75) return 'glow-green'
+  if (score >= 50) return 'glow-yellow'
+  return 'glow-red'
 }
 
 export default function ScoreGauge({ score, size = 180 }: ScoreGaugeProps) {
   if (score === null || score === undefined) {
     return (
       <div className="flex items-center justify-center" style={{ width: size, height: size }}>
-        <div className="w-16 h-16 border-4 border-gray-700 border-t-sky-400 rounded-full animate-spin" />
+        <div className="w-16 h-16 border-2 border-[#1b2838] border-t-[#00ff41] rounded-full animate-spin" />
       </div>
     )
   }
@@ -32,46 +38,72 @@ export default function ScoreGauge({ score, size = 180 }: ScoreGaugeProps) {
   const dashOffset = circumference * (1 - progress)
   const color = getScoreColor(score)
   const label = getRiskLabel(score)
+  const glowClass = getGlowClass(score)
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-col items-center gap-3">
       <svg width={size} height={size} viewBox="0 0 100 100" className="transform -rotate-90">
         {/* Background circle */}
         <circle
           cx="50" cy="50" r={radius}
           fill="none"
-          stroke="#1f2937"
-          strokeWidth="8"
+          stroke="#1b2838"
+          strokeWidth="6"
         />
+        {/* Tick marks */}
+        {Array.from({ length: 40 }).map((_, i) => {
+          const angle = (i / 40) * 2 * Math.PI - Math.PI / 2
+          const inner = 38
+          const outer = 41
+          return (
+            <line
+              key={i}
+              x1={50 + inner * Math.cos(angle)}
+              y1={50 + inner * Math.sin(angle)}
+              x2={50 + outer * Math.cos(angle)}
+              y2={50 + outer * Math.sin(angle)}
+              stroke="#1b2838"
+              strokeWidth="0.5"
+            />
+          )
+        })}
         {/* Progress circle */}
         <circle
           cx="50" cy="50" r={radius}
           fill="none"
           stroke={color}
-          strokeWidth="8"
+          strokeWidth="6"
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={dashOffset}
           style={{
-            transition: 'stroke-dashoffset 1s ease-out, stroke 0.5s ease',
-            filter: `drop-shadow(0 0 6px ${color}40)`,
+            transition: 'stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.5s ease',
+            filter: `drop-shadow(0 0 8px ${color}60) drop-shadow(0 0 16px ${color}30)`,
           }}
         />
         {/* Score text */}
         <text
-          x="50" y="50"
+          x="50" y="46"
           textAnchor="middle"
           dominantBaseline="central"
-          className="fill-white font-bold"
-          style={{ fontSize: '22px', transform: 'rotate(90deg)', transformOrigin: '50% 50%' }}
+          className="fill-white"
+          style={{ fontSize: '20px', fontWeight: 700, fontFamily: 'var(--font-mono)', transform: 'rotate(90deg)', transformOrigin: '50% 50%' }}
         >
           {Math.round(score)}
+        </text>
+        <text
+          x="50" y="58"
+          textAnchor="middle"
+          dominantBaseline="central"
+          style={{ fontSize: '5px', fontWeight: 500, fontFamily: 'var(--font-mono)', transform: 'rotate(90deg)', transformOrigin: '50% 50%', fill: '#484f58' }}
+        >
+          /100
         </text>
       </svg>
       <div className="text-center">
         <span
-          className="text-sm font-semibold px-3 py-1 rounded-full"
-          style={{ backgroundColor: `${color}20`, color }}
+          className={`font-mono text-[11px] font-bold px-3 py-1 rounded border ${glowClass}`}
+          style={{ backgroundColor: `${color}10`, color, borderColor: `${color}30` }}
         >
           {label}
         </span>

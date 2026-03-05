@@ -39,13 +39,13 @@ interface Props {
 
 function Badge({ children, variant = 'neutral' }: { children: React.ReactNode; variant?: 'good' | 'bad' | 'warn' | 'neutral' }) {
   const colors = {
-    good: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    bad: 'bg-red-500/10 text-red-400 border-red-500/20',
-    warn: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-    neutral: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+    good: 'bg-[#00ff41]/8 text-[#00ff41] border-[#00ff41]/20',
+    bad: 'bg-[#ff0040]/8 text-[#ff0040] border-[#ff0040]/20',
+    warn: 'bg-[#ff8c00]/8 text-[#ff8c00] border-[#ff8c00]/20',
+    neutral: 'bg-white/3 text-[#484f58] border-[#1b2838]',
   }
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${colors[variant]}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium border ${colors[variant]}`}>
       {children}
     </span>
   )
@@ -53,9 +53,9 @@ function Badge({ children, variant = 'neutral' }: { children: React.ReactNode; v
 
 function HeaderCheck({ label, ok }: { label: string; ok: boolean }) {
   return (
-    <div className="flex items-center gap-2 text-xs">
-      {ok ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <XCircle className="w-3.5 h-3.5 text-red-400" />}
-      <span className={ok ? 'text-gray-300' : 'text-red-300'}>{label}</span>
+    <div className="flex items-center gap-2 font-mono text-[10px]">
+      {ok ? <CheckCircle2 className="w-3 h-3 text-[#00ff41]" /> : <XCircle className="w-3 h-3 text-[#ff0040]" />}
+      <span className={ok ? 'text-[#c9d1d9]' : 'text-[#ff0040]/80'}>{label}</span>
     </div>
   )
 }
@@ -69,48 +69,49 @@ function Section({ title, icon: Icon, children, defaultOpen = true, statusBadge 
 }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
-    <div className="border border-gray-800 rounded-xl overflow-hidden">
+    <div className="terminal-card">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-3 px-4 py-3 bg-gray-900/60 hover:bg-gray-800/40 transition"
+        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.02] transition"
       >
-        <Icon className="w-4 h-4 text-sky-400 shrink-0" />
-        <span className="text-sm font-semibold text-gray-300 flex-1 text-left">{title}</span>
+        <Icon className="w-3.5 h-3.5 text-[#00ffff] shrink-0" />
+        <span className="font-mono text-[10px] font-semibold text-[#c9d1d9] flex-1 text-left uppercase tracking-wider">{title}</span>
         {statusBadge && <span className="mr-2">{statusBadge}</span>}
-        {open ? <ChevronDown className="w-4 h-4 text-gray-500" /> : <ChevronRight className="w-4 h-4 text-gray-500" />}
+        {open ? <ChevronDown className="w-3.5 h-3.5 text-[#484f58]" /> : <ChevronRight className="w-3.5 h-3.5 text-[#484f58]" />}
       </button>
-      {open && <div className="p-4 space-y-3 bg-gray-950/40">{children}</div>}
+      {open && <div className="p-4 space-y-2.5 border-t border-[#1b2838] bg-[#0a0e17]/40">{children}</div>}
     </div>
   )
 }
 
 function Row({ label, value, mono = false }: { label: string; value: React.ReactNode; mono?: boolean }) {
   return (
-    <div className="flex items-start gap-3 text-xs">
-      <span className="text-gray-500 w-32 shrink-0 pt-0.5">{label}</span>
-      <span className={`text-gray-300 flex-1 break-all ${mono ? 'font-mono' : ''}`}>{value}</span>
+    <div className="flex items-start gap-3 font-mono text-[10px]">
+      <span className="text-[#484f58] w-32 shrink-0 pt-0.5">{label}</span>
+      <span className={`text-[#c9d1d9] flex-1 break-all ${mono ? '' : ''}`}>{value}</span>
     </div>
   )
 }
 
 function ScoreMeter({ score, max = 100, label }: { score: number; max?: number; label?: string }) {
   const pct = Math.round((score / max) * 100)
-  const color = pct >= 75 ? 'bg-emerald-400' : pct >= 50 ? 'bg-amber-400' : 'bg-red-400'
+  const color = pct >= 75 ? 'bg-[#00ff41]' : pct >= 50 ? 'bg-[#ffff00]' : 'bg-[#ff0040]'
+  const shadow = pct >= 75 ? 'shadow-[0_0_6px_rgba(0,255,65,0.3)]' : pct >= 50 ? 'shadow-[0_0_6px_rgba(255,255,0,0.3)]' : 'shadow-[0_0_6px_rgba(255,0,64,0.3)]'
   return (
-    <div className="flex items-center gap-2 text-xs">
-      {label && <span className="text-gray-500 w-20 shrink-0">{label}</span>}
-      <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
-        <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${pct}%` }} />
+    <div className="flex items-center gap-2 font-mono text-[10px]">
+      {label && <span className="text-[#484f58] w-20 shrink-0">{label}</span>}
+      <div className="flex-1 h-1 bg-[#1b2838] rounded-full overflow-hidden">
+        <div className={`h-full ${color} ${shadow} rounded-full transition-all`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-gray-400 text-[11px] font-mono w-12 text-right">{score.toFixed(0)}/{max}</span>
+      <span className="text-[#484f58] text-[10px] w-12 text-right">{score.toFixed(0)}/{max}</span>
     </div>
   )
 }
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="flex items-center gap-2 text-xs text-gray-500 py-2">
-      <Info className="w-3.5 h-3.5 shrink-0" />
+    <div className="flex items-center gap-2 font-mono text-[10px] text-[#484f58] py-2">
+      <Info className="w-3 h-3 shrink-0" />
       <span>{message}</span>
     </div>
   )
@@ -122,28 +123,31 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
   const [screenshotOpen, setScreenshotOpen] = useState(false)
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1 flex items-center gap-2">
-        <Eye className="w-4 h-4" />
-        Full Transparency — Deep Dive
+    <div className="space-y-2.5">
+      <h3 className="font-mono text-[10px] font-semibold text-[#484f58] uppercase tracking-widest mb-1 flex items-center gap-2">
+        <span className="text-[#00ff41]/40">{'>'}</span>
+        <Eye className="w-3.5 h-3.5 text-[#00ffff]" />
+        Deep Dive — Full Transparency
       </h3>
 
       {/* ── Evidence Timeline ─────────────────────────────────── */}
       {evidenceSignals && (
-        <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-4">
-          <EvidenceTimeline signals={evidenceSignals} />
+        <div className="terminal-card">
+          <div className="terminal-card-body">
+            <EvidenceTimeline signals={evidenceSignals} />
+          </div>
         </div>
       )}
 
       {/* ── Page Screenshot (in-memory, not stored) ───────────── */}
       {data.crawl?.screenshot_base64 && (
-        <Section title="Page Screenshot (Live Capture — Not Stored)" icon={Camera} defaultOpen={true}>
+        <Section title="Page Screenshot (Live Capture)" icon={Camera} defaultOpen={true}>
           <div className="space-y-2">
-            <p className="text-[11px] text-gray-500">
-              Captured in-memory by TrustLens's sandboxed Chromium browser. This image is never saved to disk.
+            <p className="font-mono text-[10px] text-[#484f58]">
+              Captured in-memory by sandboxed Chromium. Never saved to disk.
             </p>
             <div
-              className="relative rounded-lg overflow-hidden border border-gray-700 cursor-pointer group"
+              className="relative rounded overflow-hidden border border-[#1b2838] cursor-pointer group"
               onClick={() => setScreenshotOpen(!screenshotOpen)}
             >
               <img
@@ -152,9 +156,9 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
                 className={`w-full transition-all duration-300 ${screenshotOpen ? 'max-h-[800px]' : 'max-h-48'} object-cover object-top`}
               />
               {!screenshotOpen && (
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-gray-950/90 flex items-end justify-center pb-3">
-                  <span className="text-xs text-gray-300 flex items-center gap-1 bg-gray-800/80 px-3 py-1.5 rounded-full border border-gray-700">
-                    <Image className="w-3 h-3" /> Click to expand full screenshot
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0a0e17]/90 flex items-end justify-center pb-3">
+                  <span className="font-mono text-[10px] text-[#c9d1d9] flex items-center gap-1 bg-[#0d1117]/80 px-3 py-1.5 rounded border border-[#1b2838]">
+                    <Image className="w-3 h-3 text-[#00ffff]" /> Click to expand
                   </span>
                 </div>
               )}
@@ -162,9 +166,9 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
             {screenshotOpen && (
               <button
                 onClick={() => setScreenshotOpen(false)}
-                className="text-xs text-sky-400 hover:underline"
+                className="font-mono text-[10px] text-[#00ffff] hover:underline"
               >
-                Collapse screenshot
+                [ collapse ]
               </button>
             )}
           </div>
@@ -187,11 +191,11 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
               <Badge variant={data.ai_analysis.available ? 'good' : 'warn'}>
                 {data.ai_analysis.available ? 'Active' : 'Unavailable'}
               </Badge>
-              <span className="text-xs text-gray-400">
-                Provider: <span className="text-gray-200 font-semibold">{data.ai_analysis.provider.toUpperCase()}</span>
+              <span className="font-mono text-[10px] text-[#484f58]">
+                Provider: <span className="text-[#c9d1d9] font-semibold">{data.ai_analysis.provider.toUpperCase()}</span>
               </span>
-              <span className="text-xs text-gray-400">
-                Model: <span className="text-sky-400 font-mono">{data.ai_analysis.model}</span>
+              <span className="font-mono text-[10px] text-[#484f58]">
+                Model: <span className="text-[#00ffff]">{data.ai_analysis.model}</span>
               </span>
             </div>
 
@@ -207,9 +211,9 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
 
                 {data.ai_analysis.deception_indicators.length > 0 && (
                   <div className="mt-2">
-                    <p className="text-[11px] text-gray-500 mb-1">Deception Indicators:</p>
+                    <p className="text-[10px] text-[#484f58] mb-1">Deception Indicators:</p>
                     {data.ai_analysis.deception_indicators.map((d, i) => (
-                      <div key={i} className="text-xs text-red-400 flex items-start gap-1.5">
+                      <div key={i} className="font-mono text-[10px] text-[#ff0040] flex items-start gap-1.5">
                         <XCircle className="w-3 h-3 mt-0.5 shrink-0" /> {d}
                       </div>
                     ))}
@@ -218,9 +222,9 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
 
                 {data.ai_analysis.legitimacy_indicators.length > 0 && (
                   <div className="mt-2">
-                    <p className="text-[11px] text-gray-500 mb-1">Legitimacy Indicators:</p>
+                    <p className="text-[10px] text-[#484f58] mb-1">Legitimacy Indicators:</p>
                     {data.ai_analysis.legitimacy_indicators.map((l, i) => (
-                      <div key={i} className="text-xs text-emerald-400 flex items-start gap-1.5">
+                      <div key={i} className="font-mono text-[10px] text-[#00ff41] flex items-start gap-1.5">
                         <CheckCircle2 className="w-3 h-3 mt-0.5 shrink-0" /> {l}
                       </div>
                     ))}
@@ -229,9 +233,9 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
 
                 {data.ai_analysis.social_engineering_tactics.length > 0 && (
                   <div className="mt-2">
-                    <p className="text-[11px] text-gray-500 mb-1">Social Engineering Tactics:</p>
+                    <p className="text-[10px] text-[#484f58] mb-1">Social Engineering Tactics:</p>
                     {data.ai_analysis.social_engineering_tactics.map((t, i) => (
-                      <div key={i} className="text-xs text-amber-400 flex items-start gap-1.5">
+                      <div key={i} className="font-mono text-[10px] text-[#ffff00] flex items-start gap-1.5">
                         <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" /> {t}
                       </div>
                     ))}
@@ -239,8 +243,8 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
                 )}
 
                 {data.ai_analysis.classifier && (
-                  <div className="mt-3 pt-3 border-t border-gray-800">
-                    <p className="text-xs font-semibold text-gray-400 mb-2">Classifier Breakdown</p>
+                  <div className="mt-3 pt-3 border-t border-[#1b2838]">
+                    <p className="font-mono text-[10px] font-semibold text-[#484f58] mb-2">Classifier Breakdown</p>
                     <div className="space-y-1">
                       <ScoreMeter score={data.ai_analysis.classifier.impersonation * 100} label="Impersonation" />
                       <ScoreMeter score={data.ai_analysis.classifier.credential_harvesting * 100} label="Cred Harvest" />
@@ -255,9 +259,9 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
 
                 {/* URL Perspective */}
                 {data.ai_analysis.url_perspective && (
-                  <div className="mt-3 pt-3 border-t border-gray-800">
-                    <p className="text-xs font-semibold text-gray-400 mb-2 flex items-center gap-1.5">
-                      <Globe className="w-3.5 h-3.5 text-sky-400" />
+                  <div className="mt-3 pt-3 border-t border-[#1b2838]">
+                    <p className="font-mono text-[10px] font-semibold text-[#484f58] mb-2 flex items-center gap-1.5">
+                      <Globe className="w-3.5 h-3.5 text-[#00ffff]" />
                       AI URL Perspective
                     </p>
                     <div className="space-y-2">
@@ -283,16 +287,16 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
                       )}
                       {data.ai_analysis.url_perspective.privacy_concerns && data.ai_analysis.url_perspective.privacy_concerns.length > 0 && (
                         <div className="mt-1">
-                          <p className="text-[11px] text-gray-500 mb-1">Privacy Concerns:</p>
+                          <p className="text-[10px] text-[#484f58] mb-1">Privacy Concerns:</p>
                           {data.ai_analysis.url_perspective.privacy_concerns.map((c: string, i: number) => (
-                            <div key={i} className="text-xs text-amber-400 flex items-start gap-1.5">
+                            <div key={i} className="font-mono text-[10px] text-[#ffff00] flex items-start gap-1.5">
                               <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" /> {c}
                             </div>
                           ))}
                         </div>
                       )}
                       {data.ai_analysis.url_perspective.overall_assessment && (
-                        <div className="mt-2 text-xs text-gray-400 bg-gray-900/60 rounded-lg p-2 border border-gray-800">
+                        <div className="mt-2 font-mono text-[10px] text-[#484f58] bg-[#0d1117] rounded-lg p-2 border border-[#1b2838]">
                           {data.ai_analysis.url_perspective.overall_assessment}
                         </div>
                       )}
@@ -301,17 +305,17 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
                 )}
 
                 {data.ai_analysis.explanation && (
-                  <div className="mt-3 text-xs text-gray-400 whitespace-pre-line bg-gray-900/60 rounded-lg p-3 border border-gray-800">
-                    <p className="text-[11px] text-gray-500 mb-1 font-semibold">AI Explanation:</p>
+                  <div className="mt-3 font-mono text-[10px] text-[#484f58] whitespace-pre-line bg-[#0d1117] rounded-lg p-3 border border-[#1b2838]">
+                    <p className="text-[10px] text-[#484f58] mb-1 font-semibold">AI Explanation:</p>
                     {data.ai_analysis.explanation}
                   </div>
                 )}
               </>
             ) : (
-              <div className="text-xs text-gray-500 bg-gray-900/40 rounded-lg p-3 border border-gray-800">
+              <div className="font-mono text-[10px] text-[#484f58] bg-[#0d1117] rounded-lg p-3 border border-[#1b2838]">
                 AI classifier was unavailable for this analysis — trust score relies on rule-based heuristics only (70% weight).
                 <br /><br />
-                To enable AI analysis, ensure <span className="text-sky-400 font-semibold">{data.ai_analysis.provider}</span> (<span className="font-mono text-sky-400">{data.ai_analysis.model}</span>) is running and accessible.
+                To enable AI analysis, ensure <span className="text-[#00ffff] font-semibold">{data.ai_analysis.provider}</span> (<span className="font-mono text-[#00ffff]">{data.ai_analysis.model}</span>) is running and accessible.
               </div>
             )}
           </>
@@ -336,9 +340,9 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
       >
         {data.brand_matches.length > 0 ? (
           data.brand_matches.map((bm, i) => (
-            <div key={i} className={`p-3 rounded-lg border ${bm.is_official ? 'border-emerald-500/30 bg-emerald-500/5' : bm.impersonation_probability >= 0.6 ? 'border-red-500/30 bg-red-500/5' : 'border-gray-800 bg-gray-900/40'}`}>
+            <div key={i} className={`p-3 rounded-lg border ${bm.is_official ? 'border-emerald-500/30 bg-[#00ff41]/5' : bm.impersonation_probability >= 0.6 ? 'border-red-500/30 bg-[#ff0040]/5' : 'border-[#1b2838] bg-[#0d1117]'}`}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-gray-200">{bm.brand_name}</span>
+                <span className="font-mono text-[10px] font-semibold text-[#c9d1d9]">{bm.brand_name}</span>
                 {bm.is_official ? (
                   <Badge variant="good">Official Domain</Badge>
                 ) : bm.impersonation_probability >= 0.6 ? (
@@ -379,7 +383,7 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
         {data.crawl ? (
           <>
             <Row label="Final URL" value={
-              <a href={data.crawl.final_url} target="_blank" rel="noreferrer" className="text-sky-400 hover:underline inline-flex items-center gap-1">
+              <a href={data.crawl.final_url} target="_blank" rel="noreferrer" className="text-[#00ffff] hover:underline inline-flex items-center gap-1">
                 {data.crawl.final_url} <ExternalLink className="w-3 h-3" />
               </a>
             } />
@@ -397,9 +401,9 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
 
             {/* SSL Info */}
             {data.crawl.ssl_info && (
-              <div className="mt-3 pt-3 border-t border-gray-800">
-                <p className="text-xs font-semibold text-gray-400 mb-2 flex items-center gap-1.5">
-                  {data.crawl.ssl_info.valid ? <Lock className="w-3.5 h-3.5 text-emerald-400" /> : <Unlock className="w-3.5 h-3.5 text-red-400" />}
+              <div className="mt-3 pt-3 border-t border-[#1b2838]">
+                <p className="font-mono text-[10px] font-semibold text-[#484f58] mb-2 flex items-center gap-1.5">
+                  {data.crawl.ssl_info.valid ? <Lock className="w-3.5 h-3.5 text-[#00ff41]" /> : <Unlock className="w-3.5 h-3.5 text-[#ff0040]" />}
                   SSL / TLS Certificate
                 </p>
                 <Row label="Protocol" value={String(data.crawl.ssl_info.protocol || '—')} mono />
@@ -411,7 +415,7 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
                   </Badge>
                 } />
                 {!!data.crawl.ssl_info.cert_error_ignored && (
-                  <div className="mt-1 text-[11px] text-amber-400">
+                  <div className="mt-1 text-[10px] text-[#ffff00]">
                     ⚠ Certificate error was ignored during crawl (possible invalid cert)
                   </div>
                 )}
@@ -420,11 +424,11 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
 
             {/* Redirect Chain */}
             {data.crawl.redirect_chain.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-800">
-                <p className="text-xs font-semibold text-gray-400 mb-2">Redirect Chain ({data.crawl.redirect_chain.length} hops)</p>
+              <div className="mt-3 pt-3 border-t border-[#1b2838]">
+                <p className="font-mono text-[10px] font-semibold text-[#484f58] mb-2">Redirect Chain ({data.crawl.redirect_chain.length} hops)</p>
                 <div className="space-y-1">
                   {data.crawl.redirect_chain.map((hop, i) => (
-                    <div key={i} className="flex items-center gap-2 text-[11px] font-mono text-gray-400">
+                    <div key={i} className="flex items-center gap-2 text-[10px] font-mono text-[#484f58]">
                       <Badge variant={hop.status_code >= 300 && hop.status_code < 400 ? 'warn' : 'neutral'}>{hop.status_code}</Badge>
                       <span className="truncate">{hop.url}</span>
                     </div>
@@ -435,8 +439,8 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
 
             {/* Meta Tags */}
             {Object.keys(data.crawl.meta_tags).length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-800">
-                <p className="text-xs font-semibold text-gray-400 mb-2">Meta Tags</p>
+              <div className="mt-3 pt-3 border-t border-[#1b2838]">
+                <p className="font-mono text-[10px] font-semibold text-[#484f58] mb-2">Meta Tags</p>
                 <div className="space-y-1">
                   {Object.entries(data.crawl.meta_tags).slice(0, 10).map(([k, v]) => (
                     <Row key={k} label={k} value={v.slice(0, 120)} />
@@ -446,7 +450,7 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
             )}
 
             {data.crawl.errors.length > 0 && (
-              <div className="mt-2 text-xs text-red-400">
+              <div className="mt-2 font-mono text-[10px] text-[#ff0040]">
                 Errors: {data.crawl.errors.join('; ')}
               </div>
             )}
@@ -489,8 +493,8 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
 
             {/* DNS Records */}
             {Object.keys(data.domain_intel.dns_records).length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-800">
-                <p className="text-xs font-semibold text-gray-400 mb-2">DNS Records</p>
+              <div className="mt-3 pt-3 border-t border-[#1b2838]">
+                <p className="font-mono text-[10px] font-semibold text-[#484f58] mb-2">DNS Records</p>
                 {Object.entries(data.domain_intel.dns_records).map(([type, records]) => (
                   <Row key={type} label={type} value={records.length > 0 ? records.join(', ') : '—'} mono />
                 ))}
@@ -498,9 +502,9 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
             )}
 
             {data.domain_intel.signals.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-800 space-y-1">
+              <div className="mt-3 pt-3 border-t border-[#1b2838] space-y-1">
                 {data.domain_intel.signals.map((s, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs text-amber-400">
+                  <div key={i} className="flex items-start gap-2 font-mono text-[10px] text-[#ffff00]">
                     <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                     {s}
                   </div>
@@ -538,7 +542,7 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
             </div>
             <ScoreMeter score={data.security_headers.header_score} label="Score" />
             {data.security_headers.missing_headers.length > 0 && (
-              <div className="text-xs text-amber-400 mt-1">
+              <div className="font-mono text-[10px] text-[#ffff00] mt-1">
                 Missing: {data.security_headers.missing_headers.join(', ')}
               </div>
             )}
@@ -579,7 +583,7 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
 
             {data.payment_detection.payment_gateways_detected.length > 0 && (
               <div className="mt-2">
-                <p className="text-[11px] text-gray-500 mb-1">Payment Gateways Detected:</p>
+                <p className="text-[10px] text-[#484f58] mb-1">Payment Gateways Detected:</p>
                 <div className="flex flex-wrap gap-1">
                   {data.payment_detection.payment_gateways_detected.map((g: string, i: number) => (
                     <Badge key={i} variant="neutral">{g}</Badge>
@@ -590,7 +594,7 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
 
             {data.payment_detection.payment_form_fields.length > 0 && (
               <div className="mt-2">
-                <p className="text-[11px] text-gray-500 mb-1">Payment Form Fields:</p>
+                <p className="text-[10px] text-[#484f58] mb-1">Payment Form Fields:</p>
                 <div className="flex flex-wrap gap-1">
                   {data.payment_detection.payment_form_fields.map((f: string, i: number) => (
                     <Badge key={i} variant="warn">{f}</Badge>
@@ -601,11 +605,11 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
 
             {data.payment_detection.crypto_addresses.length > 0 && (
               <div className="mt-2">
-                <p className="text-[11px] text-gray-500 mb-1">Cryptocurrency Addresses:</p>
+                <p className="text-[10px] text-[#484f58] mb-1">Cryptocurrency Addresses:</p>
                 {data.payment_detection.crypto_addresses.map((addr, i) => (
-                  <div key={i} className="text-xs text-red-400 flex items-start gap-1.5 font-mono">
+                  <div key={i} className="font-mono text-[10px] text-[#ff0040] flex items-start gap-1.5 font-mono">
                     <Wallet className="w-3 h-3 mt-0.5 shrink-0" />
-                    <span className="text-amber-400">[{addr.type}]</span> {addr.address}
+                    <span className="text-[#ffff00]">[{addr.type}]</span> {addr.address}
                   </div>
                 ))}
               </div>
@@ -613,9 +617,9 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
 
             {data.payment_detection.suspicious_payment_patterns.length > 0 && (
               <div className="mt-2">
-                <p className="text-[11px] text-gray-500 mb-1">Suspicious Patterns:</p>
+                <p className="text-[10px] text-[#484f58] mb-1">Suspicious Patterns:</p>
                 {data.payment_detection.suspicious_payment_patterns.map((p: string, i: number) => (
-                  <div key={i} className="text-xs text-red-400 flex items-start gap-1.5">
+                  <div key={i} className="font-mono text-[10px] text-[#ff0040] flex items-start gap-1.5">
                     <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" /> {p}
                   </div>
                 ))}
@@ -624,9 +628,9 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
 
             {data.payment_detection.legitimate_payment_indicators.length > 0 && (
               <div className="mt-2">
-                <p className="text-[11px] text-gray-500 mb-1">Legitimate Indicators:</p>
+                <p className="text-[10px] text-[#484f58] mb-1">Legitimate Indicators:</p>
                 {data.payment_detection.legitimate_payment_indicators.map((l: string, i: number) => (
-                  <div key={i} className="text-xs text-emerald-400 flex items-start gap-1.5">
+                  <div key={i} className="font-mono text-[10px] text-[#00ff41] flex items-start gap-1.5">
                     <CheckCircle2 className="w-3 h-3 mt-0.5 shrink-0" /> {l}
                   </div>
                 ))}
@@ -634,10 +638,10 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
             )}
 
             {data.payment_detection.signals && data.payment_detection.signals.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-800 space-y-1">
+              <div className="mt-3 pt-3 border-t border-[#1b2838] space-y-1">
                 {data.payment_detection.signals.map((s: string, i: number) => (
-                  <div key={i} className="text-xs text-gray-400 flex items-start gap-1.5">
-                    <Info className="w-3 h-3 mt-0.5 shrink-0 text-gray-500" /> {s}
+                  <div key={i} className="font-mono text-[10px] text-[#484f58] flex items-start gap-1.5">
+                    <Info className="w-3 h-3 mt-0.5 shrink-0 text-[#484f58]" /> {s}
                   </div>
                 ))}
               </div>
@@ -674,41 +678,41 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
             } />
 
             {/* Category Breakdown */}
-            <div className="mt-3 pt-3 border-t border-gray-800">
-              <p className="text-xs font-semibold text-gray-400 mb-2">Category Breakdown</p>
+            <div className="mt-3 pt-3 border-t border-[#1b2838]">
+              <p className="font-mono text-[10px] font-semibold text-[#484f58] mb-2">Category Breakdown</p>
               <div className="grid grid-cols-2 gap-2">
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-gray-500 w-20">Analytics</span>
+                <div className="flex items-center gap-2 font-mono text-[10px]">
+                  <span className="text-[#484f58] w-20">Analytics</span>
                   <Badge variant={(data.tracker_detection.analytics_trackers?.length ?? 0) > 0 ? 'warn' : 'good'}>
                     {data.tracker_detection.analytics_trackers?.length ?? 0}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-gray-500 w-20">Advertising</span>
+                <div className="flex items-center gap-2 font-mono text-[10px]">
+                  <span className="text-[#484f58] w-20">Advertising</span>
                   <Badge variant={(data.tracker_detection.advertising_trackers?.length ?? 0) > 0 ? 'warn' : 'good'}>
                     {data.tracker_detection.advertising_trackers?.length ?? 0}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-gray-500 w-20">Fingerprint</span>
+                <div className="flex items-center gap-2 font-mono text-[10px]">
+                  <span className="text-[#484f58] w-20">Fingerprint</span>
                   <Badge variant={(data.tracker_detection.fingerprinting_scripts?.length ?? 0) > 0 ? 'bad' : 'good'}>
                     {data.tracker_detection.fingerprinting_scripts?.length ?? 0}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-gray-500 w-20">Malware</span>
+                <div className="flex items-center gap-2 font-mono text-[10px]">
+                  <span className="text-[#484f58] w-20">Malware</span>
                   <Badge variant={(data.tracker_detection.malware_scripts?.length ?? 0) > 0 ? 'bad' : 'good'}>
                     {data.tracker_detection.malware_scripts?.length ?? 0}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-gray-500 w-20">Mining</span>
+                <div className="flex items-center gap-2 font-mono text-[10px]">
+                  <span className="text-[#484f58] w-20">Mining</span>
                   <Badge variant={(data.tracker_detection.mining_scripts?.length ?? 0) > 0 ? 'bad' : 'good'}>
                     {data.tracker_detection.mining_scripts?.length ?? 0}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-gray-500 w-20">Spyware</span>
+                <div className="flex items-center gap-2 font-mono text-[10px]">
+                  <span className="text-[#484f58] w-20">Spyware</span>
                   <Badge variant={(data.tracker_detection.known_spyware?.length ?? 0) > 0 ? 'bad' : 'good'}>
                     {data.tracker_detection.known_spyware?.length ?? 0}
                   </Badge>
@@ -727,13 +731,13 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
 
             {/* Detailed Tracker List */}
             {data.tracker_detection.trackers && data.tracker_detection.trackers.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-800">
-                <p className="text-xs font-semibold text-gray-400 mb-2">Detected Trackers</p>
+              <div className="mt-3 pt-3 border-t border-[#1b2838]">
+                <p className="font-mono text-[10px] font-semibold text-[#484f58] mb-2">Detected Trackers</p>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {data.tracker_detection.trackers.map((t, i) => (
-                    <div key={i} className="p-2 rounded-lg bg-gray-900/60 border border-gray-800">
+                    <div key={i} className="p-2 rounded-lg bg-[#0d1117] border border-[#1b2838]">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-semibold text-gray-300">{t.name}</span>
+                        <span className="font-mono text-[10px] font-semibold text-[#c9d1d9]">{t.name}</span>
                         <div className="flex items-center gap-1">
                           <Badge variant="neutral">{t.category}</Badge>
                           <Badge variant={t.severity === 'high' || t.severity === 'critical' ? 'bad' : t.severity === 'medium' ? 'warn' : 'neutral'}>
@@ -741,8 +745,8 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
                           </Badge>
                         </div>
                       </div>
-                      {t.description && <p className="text-[11px] text-gray-400">{t.description}</p>}
-                      {t.url && <p className="text-[11px] text-gray-500 font-mono truncate mt-0.5">{t.url}</p>}
+                      {t.description && <p className="text-[10px] text-[#484f58]">{t.description}</p>}
+                      {t.url && <p className="text-[10px] text-[#484f58] font-mono truncate mt-0.5">{t.url}</p>}
                     </div>
                   ))}
                 </div>
@@ -750,10 +754,10 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
             )}
 
             {data.tracker_detection.signals && data.tracker_detection.signals.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-800 space-y-1">
+              <div className="mt-3 pt-3 border-t border-[#1b2838] space-y-1">
                 {data.tracker_detection.signals.map((s: string, i: number) => (
-                  <div key={i} className="text-xs text-gray-400 flex items-start gap-1.5">
-                    <Info className="w-3 h-3 mt-0.5 shrink-0 text-gray-500" /> {s}
+                  <div key={i} className="font-mono text-[10px] text-[#484f58] flex items-start gap-1.5">
+                    <Info className="w-3 h-3 mt-0.5 shrink-0 text-[#484f58]" /> {s}
                   </div>
                 ))}
               </div>
@@ -800,7 +804,7 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
             {/* Dangerous File Types */}
             {data.download_threat.dangerous_file_types.length > 0 && (
               <div className="mt-2">
-                <p className="text-[11px] text-gray-500 mb-1">Dangerous File Types Found:</p>
+                <p className="text-[10px] text-[#484f58] mb-1">Dangerous File Types Found:</p>
                 <div className="flex flex-wrap gap-1">
                   {data.download_threat.dangerous_file_types.map((f: string, i: number) => (
                     <Badge key={i} variant={f.includes('HIGH') ? 'bad' : 'warn'}>{f}</Badge>
@@ -812,9 +816,9 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
             {/* Download Links */}
             {data.download_threat.download_links.length > 0 && (
               <div className="mt-2">
-                <p className="text-[11px] text-gray-500 mb-1">Download Links Detected:</p>
+                <p className="text-[10px] text-[#484f58] mb-1">Download Links Detected:</p>
                 {data.download_threat.download_links.map((link: string, i: number) => (
-                  <div key={i} className="text-xs text-red-400 font-mono truncate flex items-start gap-1.5">
+                  <div key={i} className="font-mono text-[10px] text-[#ff0040] font-mono truncate flex items-start gap-1.5">
                     <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" /> {link}
                   </div>
                 ))}
@@ -824,9 +828,9 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
             {/* Auto-Download Triggers */}
             {data.download_threat.auto_download_triggers.length > 0 && (
               <div className="mt-2">
-                <p className="text-[11px] text-gray-500 mb-1">Auto-Download Triggers:</p>
+                <p className="text-[10px] text-[#484f58] mb-1">Auto-Download Triggers:</p>
                 {data.download_threat.auto_download_triggers.map((t: string, i: number) => (
-                  <div key={i} className="text-xs text-red-400 flex items-start gap-1.5">
+                  <div key={i} className="font-mono text-[10px] text-[#ff0040] flex items-start gap-1.5">
                     <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" /> {t}
                   </div>
                 ))}
@@ -835,12 +839,12 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
 
             {/* Permissions Requested */}
             {data.download_threat.permissions_requested.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-800">
-                <p className="text-xs font-semibold text-gray-400 mb-2">Browser Permissions Requested</p>
+              <div className="mt-3 pt-3 border-t border-[#1b2838]">
+                <p className="font-mono text-[10px] font-semibold text-[#484f58] mb-2">Browser Permissions Requested</p>
                 <div className="space-y-1.5">
                   {data.download_threat.permission_details.map((p, i) => (
-                    <div key={i} className="flex items-center justify-between text-xs">
-                      <span className="text-gray-300 flex items-center gap-1.5">
+                    <div key={i} className="flex items-center justify-between font-mono text-[10px]">
+                      <span className="text-[#c9d1d9] flex items-center gap-1.5">
                         <Lock className="w-3 h-3" /> {p.label}
                       </span>
                       <Badge variant={p.risk === 'high' ? 'bad' : p.risk === 'medium' ? 'warn' : 'neutral'}>
@@ -864,7 +868,7 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
             {/* PUP Indicators */}
             {data.download_threat.pup_indicators.length > 0 && (
               <div className="mt-2">
-                <p className="text-[11px] text-gray-500 mb-1">Potentially Unwanted Program (PUP) Indicators:</p>
+                <p className="text-[10px] text-[#484f58] mb-1">Potentially Unwanted Program (PUP) Indicators:</p>
                 <div className="flex flex-wrap gap-1">
                   {data.download_threat.pup_indicators.map((p: string, i: number) => (
                     <Badge key={i} variant="warn">{p}</Badge>
@@ -874,10 +878,10 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
             )}
 
             {data.download_threat.signals && data.download_threat.signals.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-800 space-y-1">
+              <div className="mt-3 pt-3 border-t border-[#1b2838] space-y-1">
                 {data.download_threat.signals.map((s: string, i: number) => (
-                  <div key={i} className="text-xs text-gray-400 flex items-start gap-1.5">
-                    <Info className="w-3 h-3 mt-0.5 shrink-0 text-gray-500" /> {s}
+                  <div key={i} className="font-mono text-[10px] text-[#484f58] flex items-start gap-1.5">
+                    <Info className="w-3 h-3 mt-0.5 shrink-0 text-[#484f58]" /> {s}
                   </div>
                 ))}
               </div>
@@ -920,17 +924,17 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
             )}
             {data.screenshot_similarity.matched_screenshots.length > 0 && (
               <div className="mt-2">
-                <p className="text-[11px] text-gray-500 mb-1">Matched Screenshots:</p>
+                <p className="text-[10px] text-[#484f58] mb-1">Matched Screenshots:</p>
                 {data.screenshot_similarity.matched_screenshots.map((m, i) => (
-                  <div key={i} className="text-xs text-amber-400">{m}</div>
+                  <div key={i} className="font-mono text-[10px] text-[#ffff00]">{m}</div>
                 ))}
               </div>
             )}
             {data.screenshot_similarity.signals.length > 0 && (
               <div className="mt-2 space-y-1">
                 {data.screenshot_similarity.signals.map((s, i) => (
-                  <div key={i} className="text-xs text-gray-400 flex items-start gap-1.5">
-                    <Info className="w-3 h-3 mt-0.5 shrink-0 text-gray-500" /> {s}
+                  <div key={i} className="font-mono text-[10px] text-[#484f58] flex items-start gap-1.5">
+                    <Info className="w-3 h-3 mt-0.5 shrink-0 text-[#484f58]" /> {s}
                   </div>
                 ))}
               </div>
@@ -940,7 +944,7 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
         ) : (
           <div className="space-y-2">
             <EmptyState message="Screenshot similarity analysis was not performed. This requires the Pillow and imagehash Python packages." />
-            <div className="text-[11px] text-gray-600 bg-gray-900/40 rounded-lg p-2 font-mono border border-gray-800">
+            <div className="text-[10px] text-[#484f58] bg-[#0d1117] rounded-lg p-2 font-mono border border-[#1b2838]">
               pip install Pillow imagehash
             </div>
           </div>
@@ -977,10 +981,10 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
             </div>
 
             {data.zeroday_suspicion.anomaly_signals.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-800 space-y-1">
-                <p className="text-[11px] text-gray-500 mb-1">Anomaly Signals:</p>
+              <div className="mt-3 pt-3 border-t border-[#1b2838] space-y-1">
+                <p className="text-[10px] text-[#484f58] mb-1">Anomaly Signals:</p>
                 {data.zeroday_suspicion.anomaly_signals.map((s, i) => (
-                  <div key={i} className="text-xs text-amber-400 flex items-start gap-1.5">
+                  <div key={i} className="font-mono text-[10px] text-[#ffff00] flex items-start gap-1.5">
                     <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" /> {s}
                   </div>
                 ))}
@@ -1027,8 +1031,8 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
             {data.threat_intel.signals.length > 0 && (
               <div className="mt-2 space-y-1">
                 {data.threat_intel.signals.map((s, i) => (
-                  <div key={i} className="text-xs text-gray-400 flex items-start gap-1.5">
-                    <Info className="w-3 h-3 mt-0.5 shrink-0 text-gray-500" /> {s}
+                  <div key={i} className="font-mono text-[10px] text-[#484f58] flex items-start gap-1.5">
+                    <Info className="w-3 h-3 mt-0.5 shrink-0 text-[#484f58]" /> {s}
                   </div>
                 ))}
               </div>
@@ -1085,16 +1089,16 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
         {data.rule_signals.length > 0 ? (
           <div className="space-y-2">
             {data.rule_signals.map((rs, i) => (
-              <div key={i} className="p-2 rounded-lg bg-gray-900/60 border border-gray-800">
+              <div key={i} className="p-2 rounded-lg bg-[#0d1117] border border-[#1b2838]">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-semibold text-gray-300">{rs.rule_name}</span>
+                  <span className="font-mono text-[10px] font-semibold text-[#c9d1d9]">{rs.rule_name}</span>
                   <Badge variant={rs.severity === 'high' || rs.severity === 'critical' ? 'bad' : rs.severity === 'medium' ? 'warn' : 'neutral'}>
                     {rs.severity}
                   </Badge>
                 </div>
-                <p className="text-[11px] text-gray-400">{rs.description}</p>
-                {rs.evidence && <p className="text-[11px] text-gray-500 mt-0.5 font-mono">{rs.evidence}</p>}
-                <p className="text-[11px] text-red-400 mt-0.5">Impact: -{rs.score_impact} points</p>
+                <p className="text-[10px] text-[#484f58]">{rs.description}</p>
+                {rs.evidence && <p className="text-[10px] text-[#484f58] mt-0.5 font-mono">{rs.evidence}</p>}
+                <p className="text-[10px] text-[#ff0040] mt-0.5">Impact: -{rs.score_impact} points</p>
               </div>
             ))}
           </div>
@@ -1116,13 +1120,13 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
         {data.behavioral_signals.length > 0 ? (
           <div className="space-y-2">
             {data.behavioral_signals.map((bs, i) => (
-              <div key={i} className="p-2 rounded-lg bg-gray-900/60 border border-gray-800">
+              <div key={i} className="p-2 rounded-lg bg-[#0d1117] border border-[#1b2838]">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-semibold text-gray-300">{bs.signal_type}</span>
+                  <span className="font-mono text-[10px] font-semibold text-[#c9d1d9]">{bs.signal_type}</span>
                   <Badge variant={bs.severity === 'high' || bs.severity === 'critical' ? 'bad' : 'warn'}>{bs.severity}</Badge>
                 </div>
-                <p className="text-[11px] text-gray-400">{bs.description}</p>
-                {bs.evidence && <p className="text-[11px] text-gray-500 mt-0.5 font-mono">{bs.evidence}</p>}
+                <p className="text-[10px] text-[#484f58]">{bs.description}</p>
+                {bs.evidence && <p className="text-[10px] text-[#484f58] mt-0.5 font-mono">{bs.evidence}</p>}
               </div>
             ))}
           </div>
