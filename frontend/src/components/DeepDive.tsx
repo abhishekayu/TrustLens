@@ -35,6 +35,26 @@ interface Props {
   evidenceSignals?: string | null
 }
 
+/* ─── Section Descriptions (info button content) ─────────────────────────── */
+
+const SECTION_INFO: Record<string, string> = {
+  'AI Deception Classifier': 'Uses a large language model (Gemini, OpenAI, etc.) to analyze page content for social engineering, impersonation, and deception patterns. AI contributes only 30% of the final score — rules always override.',
+  'Brand Impersonation Analysis': 'Compares the domain name and page content against 20+ known brands using Levenshtein distance and keyword matching. Detects typosquatting and lookalike domains that imitate real brands.',
+  'Browser Crawl & Page Info': 'A sandboxed Chromium browser visits the URL, captures HTTP status, forms, scripts, cookies, redirects, meta tags, and takes a screenshot. All data is extracted for the analysis engines.',
+  'Domain Intelligence': 'Performs RDAP/WHOIS lookup for domain age, registrar, and registration dates. Checks for suspicious TLDs (e.g. .tk, .xyz). Younger domains score lower.',
+  'Security Headers': 'Checks 7 security headers: HTTPS, HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, and Permissions-Policy. Each header contributes to a 100-point security posture score.',
+  'Payment Detection': 'Scans for payment forms, credit card fields, cryptocurrency wallet addresses, and payment gateway scripts (Stripe, PayPal, etc.). Flags suspicious payment patterns.',
+  'Tracker & Malware Detection': 'Identifies analytics trackers, advertising pixels, fingerprinting scripts, crypto miners, spyware, and known malware domains in the page\'s scripts and resources.',
+  'Download & Permission Threats': 'Detects dangerous file download links (.exe, .ps1, .apk), auto-download triggers, browser permission requests (camera, mic, clipboard), and notification spam patterns.',
+  'Screenshot / Visual Clone Detection': 'Generates a perceptual hash (pHash/dHash) of the page screenshot and compares it against known brand screenshots to detect pixel-level visual clones used in phishing.',
+  'Zero-Day Suspicion Scoring': 'Composite anomaly detection scoring language tricks (homoglyphs, invisible Unicode), structural obfuscation (eval, base64), behavioral anomalies (redirect chains), and domain novelty.',
+  'Threat Intelligence Feed Lookup': 'Checks the URL against configured threat intelligence feeds and known malicious URL databases for previously reported threats.',
+  'Community Consensus': 'Aggregates user-submitted reports (phishing, safe, scam) for this URL to build a crowd-sourced risk signal.',
+  'Heuristic Rule Signals': 'Deterministic rules that check SSL usage, suspicious forms (password fields, cross-origin actions), URL patterns (IP hostnames, @ symbol), page content (urgency language, hidden iframes), redirects, and security headers.',
+  'Behavioral Signals': 'Analyzes runtime behavior: JavaScript redirects, anti-analysis tricks (disabled right-click, F12 blocking), countdown timers, auto-submit forms, clipboard manipulation, and code obfuscation.',
+  'Page Screenshot (Live Capture)': 'A live viewport screenshot captured by the sandboxed Chromium browser during crawl. Stored in-memory only — never saved to disk.',
+}
+
 /* ─── Small helpers ───────────────────────────────────────────────────────── */
 
 function Badge({ children, variant = 'neutral' }: { children: React.ReactNode; variant?: 'good' | 'bad' | 'warn' | 'neutral' }) {
@@ -68,6 +88,8 @@ function Section({ title, icon: Icon, children, defaultOpen = true, statusBadge 
   statusBadge?: React.ReactNode
 }) {
   const [open, setOpen] = useState(defaultOpen)
+  const [showInfo, setShowInfo] = useState(false)
+  const infoText = SECTION_INFO[title.replace(/\s*\(\d+\)$/, '')]  // strip "(N)" suffix for rule/behavioral counts
   return (
     <div className="terminal-card">
       <button
@@ -76,9 +98,27 @@ function Section({ title, icon: Icon, children, defaultOpen = true, statusBadge 
       >
         <Icon className="w-3.5 h-3.5 text-[#00ffff] shrink-0" />
         <span className="font-mono text-[10px] font-semibold text-[#c9d1d9] flex-1 text-left uppercase tracking-wider">{title}</span>
+        {infoText && (
+          <span
+            role="button"
+            onClick={e => { e.stopPropagation(); setShowInfo(s => !s) }}
+            className="w-4 h-4 rounded-full border border-[#1b2838] bg-[#0a0e17] flex items-center justify-center hover:border-[#00ffff]/30 transition shrink-0 cursor-help"
+            title="What is this?"
+          >
+            <Info className="w-2.5 h-2.5 text-[#484f58]" />
+          </span>
+        )}
         {statusBadge && <span className="mr-2">{statusBadge}</span>}
         {open ? <ChevronDown className="w-3.5 h-3.5 text-[#484f58]" /> : <ChevronRight className="w-3.5 h-3.5 text-[#484f58]" />}
       </button>
+      {showInfo && infoText && (
+        <div className="px-4 py-2.5 bg-[#00ffff]/[0.03] border-t border-[#00ffff]/10">
+          <p className="font-mono text-[10px] text-[#00ffff]/70 leading-relaxed flex items-start gap-2">
+            <Info className="w-3 h-3 mt-0.5 shrink-0 text-[#00ffff]/50" />
+            {infoText}
+          </p>
+        </div>
+      )}
       {open && <div className="p-4 space-y-2.5 border-t border-[#1b2838] bg-[#0a0e17]/40">{children}</div>}
     </div>
   )
@@ -607,7 +647,7 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
               <div className="mt-2">
                 <p className="text-[10px] text-[#484f58] mb-1">Cryptocurrency Addresses:</p>
                 {data.payment_detection.crypto_addresses.map((addr, i) => (
-                  <div key={i} className="font-mono text-[10px] text-[#ff0040] flex items-start gap-1.5 font-mono">
+                  <div key={i} className="font-mono text-[10px] text-[#ff0040] flex items-start gap-1.5">
                     <Wallet className="w-3 h-3 mt-0.5 shrink-0" />
                     <span className="text-[#ffff00]">[{addr.type}]</span> {addr.address}
                   </div>
@@ -818,7 +858,7 @@ export default function DeepDive({ data, evidenceSignals }: Props) {
               <div className="mt-2">
                 <p className="text-[10px] text-[#484f58] mb-1">Download Links Detected:</p>
                 {data.download_threat.download_links.map((link: string, i: number) => (
-                  <div key={i} className="font-mono text-[10px] text-[#ff0040] font-mono truncate flex items-start gap-1.5">
+                  <div key={i} className="font-mono text-[10px] text-[#ff0040] truncate flex items-start gap-1.5">
                     <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" /> {link}
                   </div>
                 ))}

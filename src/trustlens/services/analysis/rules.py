@@ -65,11 +65,51 @@ async def check_ssl(crawl: CrawlResult, original_url: str) -> list[RuleSignal]:
                 rule_name="No HTTPS",
                 category="ssl",
                 severity=RiskLevel.HIGH,
-                description="Site does not use HTTPS encryption",
+                description="Site does not use HTTPS encryption – data is transmitted in plain text",
                 evidence=f"URL scheme: {urlparse(crawl.final_url).scheme}",
                 score_impact=25.0,
             )
         )
+    else:
+        # HTTPS is present — check certificate details
+        protocol = ssl.get("protocol", "")
+        if protocol and "TLSv1.3" in protocol:
+            signals.append(
+                RuleSignal(
+                    rule_id="SSL_004",
+                    rule_name="TLS 1.3",
+                    category="ssl",
+                    severity=RiskLevel.INFO,
+                    description="Site uses modern TLS 1.3 protocol for encryption",
+                    evidence=f"Protocol: {protocol}",
+                    score_impact=-5.0,  # positive signal
+                )
+            )
+        elif protocol and ("TLSv1.0" in protocol or "TLSv1.1" in protocol or "SSLv" in protocol):
+            signals.append(
+                RuleSignal(
+                    rule_id="SSL_005",
+                    rule_name="Outdated TLS",
+                    category="ssl",
+                    severity=RiskLevel.MEDIUM,
+                    description=f"Site uses outdated {protocol} protocol – vulnerable to known attacks",
+                    evidence=f"Protocol: {protocol}",
+                    score_impact=15.0,
+                )
+            )
+        if ssl.get("valid") is False:
+            signals.append(
+                RuleSignal(
+                    rule_id="SSL_006",
+                    rule_name="Invalid Certificate",
+                    category="ssl",
+                    severity=RiskLevel.HIGH,
+                    description="SSL certificate is invalid, expired, or self-signed",
+                    evidence="Certificate validation failed",
+                    score_impact=25.0,
+                )
+            )
+
     if ssl.get("is_https") and not ssl.get("has_hsts"):
         signals.append(
             RuleSignal(
@@ -77,7 +117,7 @@ async def check_ssl(crawl: CrawlResult, original_url: str) -> list[RuleSignal]:
                 rule_name="No HSTS",
                 category="ssl",
                 severity=RiskLevel.LOW,
-                description="Site uses HTTPS but does not set HSTS header",
+                description="Site uses HTTPS but does not enforce it via HSTS header",
                 evidence="Missing Strict-Transport-Security header",
                 score_impact=5.0,
             )
@@ -399,6 +439,52 @@ async def check_security_headers(crawl: CrawlResult, original_url: str) -> list[
                 description=f"Site is missing {missing_count}/3 standard security headers",
                 evidence="Missing headers indicate lower security maturity",
                 score_impact=8.0,
+            )
+        )
+
+    return signals
+
+
+@rule
+async def check_external_resources(crawl: CrawlResult, original_url: str) -> list[RuleSignal]:
+    """Check for suspicious external resource loading patterns."""
+    signals = []
+    page_domain = extract_domain(crawl.final_url).lower()
+
+    # Count external scripts from different domains
+    external_script_domains: set[str] = set()
+    for script in crawl.external_scripts:
+        if "://" in script:
+            script_domain = extract_domain(script).lower()
+            if script_domain and script_domain != page_domain:
+                external_script_domains.add(script_domain)
+
+    if len(external_script_domains) > 10:
+        signals.append(
+            RuleSignal(
+                rule_id="EXT_001",
+                rule_name="Excessive external scripts",
+                category="security_posture",
+                severity=RiskLevel.MEDIUM,
+                description=f"Page loads scripts from {len(external_script_domains)} different external domains",
+                evidence=f"Domains: {', '.join(list(external_script_domains)[:5])}...",
+                score_impact=10.0,
+            )
+        )
+
+    # Check for data exfiltration via image pixels (tracking pixels)
+    html_lower = crawl.html_content.lower()
+    pixel_count = len(re.findall(r'<img[^>]*(?:width\s*=\s*["\']1|height\s*=\s*["\']1|1x1)', html_lower))
+    if pixel_count > 3:
+        signals.append(
+            RuleSignal(
+                rule_id="EXT_002",
+                rule_name="Multiple tracking pixels",
+                category="privacy",
+                severity=RiskLevel.LOW,
+                description=f"Page contains {pixel_count} tracking pixel images (1x1 pixel images used for tracking)",
+                evidence=f"{pixel_count} 1x1 pixel images found",
+                score_impact=5.0,
             )
         )
 

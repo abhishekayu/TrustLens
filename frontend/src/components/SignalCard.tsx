@@ -28,16 +28,16 @@ export default function SignalCard({ title, score, evidence, icon }: SignalCardP
   const Icon = icon || getIcon(score)
 
   return (
-    <div className={`rounded-lg border ${colors.border} ${colors.bg} p-3.5 animate-fade-in transition-all hover:border-opacity-40`}>
+    <div className={`rounded-lg border ${colors.border} ${colors.bg} p-3.5 h-[120px] flex flex-col animate-fade-in transition-all hover:border-opacity-40`}>
       <div className="flex items-start justify-between mb-1.5">
-        <div className="flex items-center gap-2">
-          <Icon className={`w-3.5 h-3.5 ${colors.text}`} />
-          <h4 className="text-xs font-mono font-medium text-[#c9d1d9]">{title}</h4>
+        <div className="flex items-center gap-2 min-w-0">
+          <Icon className={`w-3.5 h-3.5 shrink-0 ${colors.text}`} />
+          <h4 className="text-xs font-mono font-medium text-[#c9d1d9] truncate">{title}</h4>
         </div>
-        <span className={`font-mono text-sm font-bold ${colors.text} ${colors.glow}`}>{Math.round(score)}</span>
+        <span className={`font-mono text-sm font-bold shrink-0 ml-2 ${colors.text} ${colors.glow}`}>{Math.round(score)}</span>
       </div>
       {evidence && (
-        <p className="text-[11px] font-mono text-[#484f58] leading-relaxed mt-1 pl-5.5">{evidence}</p>
+        <p className="text-[11px] font-mono text-[#484f58] leading-relaxed mt-1 pl-5.5 line-clamp-3 overflow-hidden">{evidence}</p>
       )}
     </div>
   )

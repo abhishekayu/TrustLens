@@ -119,6 +119,8 @@ class BehavioralAnalyzer:
             (r"onselectstart\s*=\s*[\"']return\s+false", "text selection disabled"),
             (r"onkeydown.*?F12", "F12 key blocked"),
             (r"devtools", "devtools detection"),
+            (r"ondragstart\s*=\s*[\"']return\s+false", "drag disabled"),
+            (r"oncopy\s*=\s*[\"']return\s+false", "copy disabled"),
         ]
         for pattern, desc in anti_analysis:
             if re.search(pattern, html_lower):
@@ -133,23 +135,31 @@ class BehavioralAnalyzer:
                 )
 
         # Countdown timers / urgency mechanisms
-        if re.search(r"countdown|timer|setTimeout.*redirect|setInterval.*redirect", html_lower):
-            signals.append(
-                BehavioralSignal(
-                    signal_type="countdown",
-                    description="Page contains countdown/timer-based mechanisms",
-                    severity=RiskLevel.MEDIUM,
-                    evidence="Timed urgency mechanism detected",
-                    score_impact=10.0,
+        urgency_patterns = [
+            r"countdown|timer|setTimeout.*redirect|setInterval.*redirect",
+            r"expires?\s+in\s+\d+",
+            r"hurry|urgent|immediately|act\s+now",
+            r"only\s+\d+\s+(left|remaining|available)",
+        ]
+        for pattern in urgency_patterns:
+            if re.search(pattern, html_lower):
+                signals.append(
+                    BehavioralSignal(
+                        signal_type="urgency",
+                        description="Page uses urgency/scarcity tactics to pressure users",
+                        severity=RiskLevel.MEDIUM,
+                        evidence=f"Pattern: {pattern[:50]}",
+                        score_impact=10.0,
+                    )
                 )
-            )
+                break  # One signal is enough
 
         # Auto-submit forms
         if re.search(r"\.submit\(\)|autosubmit|auto-submit", html_lower):
             signals.append(
                 BehavioralSignal(
                     signal_type="auto_submit",
-                    description="Page appears to auto-submit forms",
+                    description="Page appears to auto-submit forms without user interaction",
                     severity=RiskLevel.HIGH,
                     evidence="Form auto-submission detected",
                     score_impact=25.0,
@@ -161,10 +171,76 @@ class BehavioralAnalyzer:
             signals.append(
                 BehavioralSignal(
                     signal_type="clipboard_access",
-                    description="Page attempts to access the clipboard",
+                    description="Page attempts to access or manipulate the clipboard",
                     severity=RiskLevel.MEDIUM,
                     evidence="Clipboard API usage detected",
                     score_impact=10.0,
+                )
+            )
+
+        # Popup / overlay abuse (fake dialogs)
+        popup_patterns = [
+            (r"window\.open\s*\(", "window.open() popup"),
+            (r"alert\s*\(\s*[\"'].*?(virus|infected|compromised|hacked|warning)", "fake alert dialog"),
+            (r"confirm\s*\(\s*[\"'].*?(update|download|install)", "fake confirm dialog"),
+        ]
+        for pattern, desc in popup_patterns:
+            if re.search(pattern, html_lower):
+                signals.append(
+                    BehavioralSignal(
+                        signal_type="popup_abuse",
+                        description=f"Suspicious popup/dialog detected: {desc}",
+                        severity=RiskLevel.MEDIUM,
+                        evidence=desc,
+                        score_impact=12.0,
+                    )
+                )
+
+        # Notification permission request (used in push notification spam)
+        if re.search(r"Notification\.requestPermission|push.*subscribe", html_lower):
+            signals.append(
+                BehavioralSignal(
+                    signal_type="notification_request",
+                    description="Page requests push notification permissions",
+                    severity=RiskLevel.LOW,
+                    evidence="Notification.requestPermission() or push subscription detected",
+                    score_impact=5.0,
+                )
+            )
+
+        # Geolocation tracking
+        if re.search(r"navigator\.geolocation|getCurrentPosition|watchPosition", html_lower):
+            signals.append(
+                BehavioralSignal(
+                    signal_type="geolocation",
+                    description="Page requests user geolocation data",
+                    severity=RiskLevel.LOW,
+                    evidence="Geolocation API usage detected",
+                    score_impact=5.0,
+                )
+            )
+
+        # WebSocket connections (can be used for C2 communication)
+        if re.search(r"new\s+WebSocket\s*\(|wss?://", html_lower):
+            signals.append(
+                BehavioralSignal(
+                    signal_type="websocket",
+                    description="Page establishes WebSocket connection (real-time data channel)",
+                    severity=RiskLevel.LOW,
+                    evidence="WebSocket connection detected",
+                    score_impact=3.0,
+                )
+            )
+
+        # Service Worker registration (can persist after page close)
+        if re.search(r"serviceWorker\.register|navigator\.serviceWorker", html_lower):
+            signals.append(
+                BehavioralSignal(
+                    signal_type="service_worker",
+                    description="Page registers a Service Worker (can persist after tab close)",
+                    severity=RiskLevel.LOW,
+                    evidence="Service Worker registration detected",
+                    score_impact=3.0,
                 )
             )
 
@@ -200,7 +276,7 @@ class BehavioralAnalyzer:
             signals.append(
                 BehavioralSignal(
                     signal_type="excessive_base64",
-                    description=f"Page embeds {b64_count} base64-encoded images (evasion technique)",
+                    description=f"Page embeds {b64_count} base64-encoded images (may evade content scanners)",
                     severity=RiskLevel.MEDIUM,
                     evidence=f"{b64_count} base64 images found",
                     score_impact=12.0,
@@ -213,6 +289,9 @@ class BehavioralAnalyzer:
             (r"eval\s*\(\s*unescape\s*\(", "eval(unescape()) – URL-encoded JS"),
             (r"String\.fromCharCode", "String.fromCharCode – char code obfuscation"),
             (r"\\x[0-9a-f]{2}\\x[0-9a-f]{2}\\x[0-9a-f]{2}", "hex-encoded strings"),
+            (r"eval\s*\(\s*function\s*\(\s*p\s*,\s*a\s*,\s*c\s*,\s*k", "Dean Edwards packer – JS obfuscation"),
+            (r"document\.write\s*\(\s*unescape", "document.write(unescape()) – DOM injection"),
+            (r"\[\s*['\"]\\x", "hex-encoded array entries"),
         ]
         for pattern, desc in obfuscation_patterns:
             if re.search(pattern, html_lower):
@@ -225,5 +304,51 @@ class BehavioralAnalyzer:
                         score_impact=20.0,
                     )
                 )
+
+        # Hidden elements with input fields (phishing technique)
+        hidden_inputs = len(re_mod.findall(
+            r'<(?:div|span|form)[^>]*style\s*=\s*"[^"]*(?:display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0)[^"]*"[^>]*>(?:(?!</(?:div|span|form)>).)*<input',
+            html_lower,
+        ))
+        if hidden_inputs > 0:
+            signals.append(
+                BehavioralSignal(
+                    signal_type="hidden_inputs",
+                    description=f"Found {hidden_inputs} hidden container(s) with input fields – potential honeypot or data exfiltration",
+                    severity=RiskLevel.MEDIUM,
+                    evidence=f"{hidden_inputs} hidden input containers",
+                    score_impact=15.0,
+                )
+            )
+
+        # External script from suspicious TLD
+        suspicious_script_tlds = {"tk", "ml", "ga", "cf", "gq", "xyz", "top", "icu", "buzz"}
+        ext_script_matches = re_mod.findall(r'src\s*=\s*["\']https?://([^/"\']+)', html_lower)
+        for domain in ext_script_matches:
+            tld = domain.split(".")[-1] if "." in domain else ""
+            if tld in suspicious_script_tlds:
+                signals.append(
+                    BehavioralSignal(
+                        signal_type="suspicious_external_script",
+                        description=f"External script loaded from suspicious TLD domain: {domain}",
+                        severity=RiskLevel.HIGH,
+                        evidence=f"Script source: {domain}",
+                        score_impact=20.0,
+                    )
+                )
+                break  # One is enough
+
+        # Iframe sandbox bypass or suspicious iframes
+        iframe_count = len(re_mod.findall(r"<iframe", html_lower))
+        if iframe_count > 3:
+            signals.append(
+                BehavioralSignal(
+                    signal_type="excessive_iframes",
+                    description=f"Page contains {iframe_count} iframes – may be loading external phishing content",
+                    severity=RiskLevel.MEDIUM,
+                    evidence=f"{iframe_count} iframe elements found",
+                    score_impact=10.0,
+                )
+            )
 
         return signals

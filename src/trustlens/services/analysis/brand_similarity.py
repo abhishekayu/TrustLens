@@ -25,27 +25,69 @@ from trustlens.security import extract_domain
 logger = get_logger(__name__)
 
 # Known brands dataset (used when no DB registry is available)
+# Based on most-phished brands from APWG, Check Point, and Vade reports
 DEFAULT_BRANDS = [
-    {"brand_name": "Google", "domains": ["google.com", "googleapis.com"], "keywords": ["google", "gmail", "drive"]},
-    {"brand_name": "Microsoft", "domains": ["microsoft.com", "live.com", "outlook.com", "office.com"], "keywords": ["microsoft", "outlook", "onedrive", "teams"]},
-    {"brand_name": "Apple", "domains": ["apple.com", "icloud.com"], "keywords": ["apple", "icloud", "itunes"]},
-    {"brand_name": "Amazon", "domains": ["amazon.com", "aws.amazon.com"], "keywords": ["amazon", "aws", "prime"]},
-    {"brand_name": "PayPal", "domains": ["paypal.com"], "keywords": ["paypal"]},
-    {"brand_name": "Facebook", "domains": ["facebook.com", "fb.com", "meta.com"], "keywords": ["facebook", "meta", "instagram"]},
-    {"brand_name": "Netflix", "domains": ["netflix.com"], "keywords": ["netflix"]},
-    {"brand_name": "Bank of America", "domains": ["bankofamerica.com"], "keywords": ["bankofamerica", "bofa"]},
+    # ── Big Tech ──────────────────────────────────────────────
+    {"brand_name": "Google", "domains": ["google.com", "googleapis.com", "google.co.in", "google.co.uk", "accounts.google.com"], "keywords": ["google", "gmail", "drive", "youtube", "chrome"]},
+    {"brand_name": "Microsoft", "domains": ["microsoft.com", "live.com", "outlook.com", "office.com", "office365.com", "microsoftonline.com", "azure.com", "sharepoint.com"], "keywords": ["microsoft", "outlook", "onedrive", "teams", "office365", "azure", "windows"]},
+    {"brand_name": "Apple", "domains": ["apple.com", "icloud.com", "appleid.apple.com", "apps.apple.com"], "keywords": ["apple", "icloud", "itunes", "appstore", "apple id", "macos"]},
+    {"brand_name": "Amazon", "domains": ["amazon.com", "amazon.co.uk", "amazon.in", "aws.amazon.com", "amazon.de"], "keywords": ["amazon", "aws", "prime", "kindle", "alexa"]},
+    {"brand_name": "Meta/Facebook", "domains": ["facebook.com", "fb.com", "meta.com", "messenger.com", "instagram.com"], "keywords": ["facebook", "meta", "instagram", "messenger", "fb"]},
+    {"brand_name": "Twitter/X", "domains": ["twitter.com", "x.com", "t.co"], "keywords": ["twitter", "tweet", "x.com"]},
+    {"brand_name": "LinkedIn", "domains": ["linkedin.com", "lnkd.in"], "keywords": ["linkedin", "professional network"]},
+    {"brand_name": "Netflix", "domains": ["netflix.com"], "keywords": ["netflix", "streaming"]},
+    {"brand_name": "Spotify", "domains": ["spotify.com", "open.spotify.com"], "keywords": ["spotify", "playlist"]},
+    {"brand_name": "Zoom", "domains": ["zoom.us", "zoom.com"], "keywords": ["zoom", "meeting", "webinar"]},
+    {"brand_name": "Slack", "domains": ["slack.com"], "keywords": ["slack", "workspace"]},
+    {"brand_name": "Discord", "domains": ["discord.com", "discord.gg", "discordapp.com"], "keywords": ["discord", "server"]},
+    {"brand_name": "Telegram", "domains": ["telegram.org", "t.me", "web.telegram.org"], "keywords": ["telegram"]},
+    {"brand_name": "TikTok", "domains": ["tiktok.com"], "keywords": ["tiktok"]},
+    {"brand_name": "GitHub", "domains": ["github.com", "github.io"], "keywords": ["github", "repository"]},
+
+    # ── Finance & Banking ─────────────────────────────────────
+    {"brand_name": "PayPal", "domains": ["paypal.com", "paypal.me"], "keywords": ["paypal", "pay pal"]},
+    {"brand_name": "Bank of America", "domains": ["bankofamerica.com", "bofa.com"], "keywords": ["bankofamerica", "bofa", "bank of america"]},
     {"brand_name": "Chase", "domains": ["chase.com", "jpmorganchase.com"], "keywords": ["chase", "jpmorgan"]},
-    {"brand_name": "Wells Fargo", "domains": ["wellsfargo.com"], "keywords": ["wellsfargo"]},
-    {"brand_name": "DHL", "domains": ["dhl.com"], "keywords": ["dhl", "shipment", "tracking"]},
-    {"brand_name": "LinkedIn", "domains": ["linkedin.com"], "keywords": ["linkedin"]},
-    {"brand_name": "Dropbox", "domains": ["dropbox.com"], "keywords": ["dropbox"]},
-    {"brand_name": "DocuSign", "domains": ["docusign.com", "docusign.net"], "keywords": ["docusign", "signature"]},
-    {"brand_name": "Stripe", "domains": ["stripe.com"], "keywords": ["stripe", "payment"]},
-    {"brand_name": "USPS", "domains": ["usps.com"], "keywords": ["usps", "postal"]},
-    {"brand_name": "FedEx", "domains": ["fedex.com"], "keywords": ["fedex"]},
+    {"brand_name": "Wells Fargo", "domains": ["wellsfargo.com", "wf.com"], "keywords": ["wellsfargo", "wells fargo"]},
+    {"brand_name": "Citi", "domains": ["citi.com", "citibank.com", "citigroup.com"], "keywords": ["citi", "citibank", "citigroup"]},
+    {"brand_name": "HSBC", "domains": ["hsbc.com", "hsbc.co.uk"], "keywords": ["hsbc"]},
+    {"brand_name": "Capital One", "domains": ["capitalone.com"], "keywords": ["capital one", "capitalone"]},
+    {"brand_name": "Venmo", "domains": ["venmo.com"], "keywords": ["venmo"]},
+    {"brand_name": "Cash App", "domains": ["cash.app", "squareup.com"], "keywords": ["cash app", "cashapp", "square"]},
+    {"brand_name": "Wise", "domains": ["wise.com", "transferwise.com"], "keywords": ["wise", "transferwise"]},
+    {"brand_name": "Robinhood", "domains": ["robinhood.com"], "keywords": ["robinhood"]},
+    {"brand_name": "Binance", "domains": ["binance.com", "binance.us"], "keywords": ["binance", "bnb"]},
     {"brand_name": "Coinbase", "domains": ["coinbase.com"], "keywords": ["coinbase", "crypto"]},
+
+    # ── Shipping & Logistics ──────────────────────────────────
+    {"brand_name": "DHL", "domains": ["dhl.com", "dhl.de"], "keywords": ["dhl", "shipment", "tracking", "parcel"]},
+    {"brand_name": "USPS", "domains": ["usps.com"], "keywords": ["usps", "postal", "mail delivery"]},
+    {"brand_name": "FedEx", "domains": ["fedex.com"], "keywords": ["fedex", "federal express"]},
+    {"brand_name": "UPS", "domains": ["ups.com"], "keywords": ["ups", "united parcel"]},
+    {"brand_name": "Royal Mail", "domains": ["royalmail.com"], "keywords": ["royal mail", "royalmail"]},
+    {"brand_name": "La Poste", "domains": ["laposte.fr", "laposte.net"], "keywords": ["la poste", "laposte"]},
+
+    # ── Cloud / SaaS / Productivity ───────────────────────────
+    {"brand_name": "Dropbox", "domains": ["dropbox.com"], "keywords": ["dropbox"]},
+    {"brand_name": "DocuSign", "domains": ["docusign.com", "docusign.net"], "keywords": ["docusign", "esignature", "e-signature"]},
+    {"brand_name": "Stripe", "domains": ["stripe.com"], "keywords": ["stripe", "payment"]},
+    {"brand_name": "Adobe", "domains": ["adobe.com", "creativecloud.adobe.com"], "keywords": ["adobe", "creative cloud", "photoshop", "acrobat"]},
+    {"brand_name": "Salesforce", "domains": ["salesforce.com", "force.com"], "keywords": ["salesforce", "crm"]},
+    {"brand_name": "Shopify", "domains": ["shopify.com", "myshopify.com"], "keywords": ["shopify"]},
+    {"brand_name": "WordPress", "domains": ["wordpress.com", "wordpress.org", "wp.com"], "keywords": ["wordpress", "wp-admin"]},
+    {"brand_name": "Notion", "domains": ["notion.so", "notion.com"], "keywords": ["notion"]},
+
+    # ── Telecom & ISP ─────────────────────────────────────────
+    {"brand_name": "AT&T", "domains": ["att.com", "att.net"], "keywords": ["at&t", "att"]},
+    {"brand_name": "Verizon", "domains": ["verizon.com"], "keywords": ["verizon"]},
+    {"brand_name": "T-Mobile", "domains": ["t-mobile.com"], "keywords": ["t-mobile", "tmobile"]},
+
+    # ── Government ────────────────────────────────────────────
+    {"brand_name": "IRS", "domains": ["irs.gov"], "keywords": ["irs", "internal revenue", "tax refund"]},
+    {"brand_name": "HMRC", "domains": ["gov.uk"], "keywords": ["hmrc", "tax refund", "revenue customs"]},
+
+    # ── WhatsApp ──────────────────────────────────────────────
     {"brand_name": "WhatsApp", "domains": ["whatsapp.com", "web.whatsapp.com"], "keywords": ["whatsapp"]},
-    {"brand_name": "Twitter/X", "domains": ["twitter.com", "x.com"], "keywords": ["twitter"]},
 ]
 
 

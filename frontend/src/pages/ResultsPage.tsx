@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, ExternalLink, Clock, AlertCircle, Brain, Shield, Eye, Terminal } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Clock, AlertCircle, Brain, Shield, Eye } from 'lucide-react'
 import { useAnalysisPolling } from '../hooks/useAnalysisPolling'
 import ScoreGauge from '../components/ScoreGauge'
 import SignalCard from '../components/SignalCard'
@@ -101,16 +101,28 @@ export default function ResultsPage() {
 
   const signals = ts
     ? ts.components.map(c => ({
-        title: c.name,
-        score: c.score,
-        evidence: c.evidence?.join('; ') || undefined,
+        title: c.component.replace(/_/g, ' '),
+        score: c.raw_score,
+        evidence: c.signals?.join('; ') || undefined,
       }))
     : []
 
   if (ts) {
+    // Build top-4 key findings for Rule-Based Score
+    const ruleKeys = ts.components
+      .filter(c => c.component !== 'ai_deception_classifier')
+      .flatMap(c => c.signals)
+      .filter(Boolean)
+      .slice(0, 4)
+      .join('; ')
+
+    // Build top-4 key findings for AI Advisory Score
+    const aiComp = ts.components.find(c => c.component === 'ai_deception_classifier')
+    const aiKeys = aiComp?.signals?.filter(Boolean).slice(0, 4).join('; ') || undefined
+
     signals.unshift(
-      { title: 'Rule‑Based Score', score: ts.rule_score, evidence: undefined },
-      { title: 'AI Advisory Score', score: ts.ai_confidence * 100, evidence: undefined },
+      { title: 'Rule‑Based Score', score: ts.rule_score, evidence: ruleKeys || 'All rule checks passed' },
+      { title: 'AI Advisory Score', score: ts.ai_confidence * 100, evidence: aiKeys || 'AI analysis complete' },
     )
   }
 

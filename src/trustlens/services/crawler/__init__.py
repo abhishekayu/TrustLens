@@ -242,12 +242,96 @@ class CrawlerService:
         return result
 
     def _extract_ssl_info(self, url: str, headers: dict[str, str]) -> dict[str, Any]:
-        """Extract basic SSL information from the URL and headers."""
+        """Extract SSL certificate and connection information."""
         parsed = urlparse(url)
-        return {
+        info: dict[str, Any] = {
             "is_https": parsed.scheme == "https",
             "has_hsts": "strict-transport-security" in {k.lower() for k in headers},
+            "protocol": None,
+            "issuer": None,
+            "subject": None,
+            "valid": False,
+            "valid_from": None,
+            "valid_to": None,
+            "serial_number": None,
+            "san": None,
         }
+
+        if not info["is_https"]:
+            return info
+
+        # Fetch actual certificate details via ssl module
+        import ssl
+        import socket
+        from datetime import datetime as _dt
+
+        hostname = parsed.hostname or ""
+        port = parsed.port or 443
+
+        try:
+            ctx = ssl.create_default_context()
+            with socket.create_connection((hostname, port), timeout=5) as sock:
+                with ctx.wrap_socket(sock, server_hostname=hostname) as ssock:
+                    cert = ssock.getpeercert()
+                    info["protocol"] = ssock.version()  # e.g. "TLSv1.3"
+
+                    if cert:
+                        # Subject
+                        subj = cert.get("subject", ())
+                        subj_cn = ""
+                        for rdn in subj:
+                            for attr_type, attr_value in rdn:
+                                if attr_type == "commonName":
+                                    subj_cn = attr_value
+                        info["subject"] = subj_cn or hostname
+
+                        # Issuer
+                        issuer = cert.get("issuer", ())
+                        issuer_parts = []
+                        for rdn in issuer:
+                            for attr_type, attr_value in rdn:
+                                if attr_type in ("organizationName", "commonName"):
+                                    issuer_parts.append(attr_value)
+                        info["issuer"] = ", ".join(dict.fromkeys(issuer_parts)) or "Unknown"
+
+                        # Validity dates
+                        not_before = cert.get("notBefore", "")
+                        not_after = cert.get("notAfter", "")
+                        info["valid_from"] = not_before
+                        info["valid_to"] = not_after
+
+                        # Check if currently valid
+                        try:
+                            fmt = "%b %d %H:%M:%S %Y %Z"
+                            dt_from = _dt.strptime(not_before, fmt)
+                            dt_to = _dt.strptime(not_after, fmt)
+                            now = _dt.utcnow()
+                            info["valid"] = dt_from <= now <= dt_to
+                        except Exception:
+                            info["valid"] = True  # cert was accepted by default context
+
+                        # Serial number
+                        info["serial_number"] = cert.get("serialNumber", None)
+
+                        # Subject Alternative Names
+                        san_list = [v for t, v in cert.get("subjectAltName", ()) if t == "DNS"]
+                        if san_list:
+                            info["san"] = ", ".join(san_list[:10])
+
+                    logger.info("crawler.ssl_extracted", hostname=hostname, protocol=info["protocol"], valid=info["valid"])
+
+        except ssl.SSLCertVerificationError as e:
+            info["valid"] = False
+            info["protocol"] = "TLS (cert invalid)"
+            info["issuer"] = "Certificate verification failed"
+            info["subject"] = hostname
+            info["cert_error_ignored"] = True
+            logger.warning("crawler.ssl_cert_invalid", hostname=hostname, error=str(e))
+        except Exception as e:
+            # Connection failed — leave fields as None
+            logger.warning("crawler.ssl_extraction_failed", hostname=hostname, error=str(e))
+
+        return info
 
     async def _take_screenshot(self, page: Any, url: str) -> Optional[str]:
         """Capture a screenshot and return the file path."""

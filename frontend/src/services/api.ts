@@ -8,10 +8,12 @@ export interface AnalysisSubmitResponse {
 }
 
 export interface ComponentScore {
-  name: string
-  score: number
+  component: string
+  raw_score: number
   weight: number
-  evidence: string[]
+  weighted_score: number
+  confidence: number
+  signals: string[]
 }
 
 export interface TrustScoreResult {
