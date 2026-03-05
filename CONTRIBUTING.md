@@ -75,10 +75,28 @@ Documentation improvements are always welcome! This includes:
 ### Prerequisites
 
 - Python 3.11+
-- Node.js 18+ (for frontend work)
+- Node.js 18+
+- npm 9+
 - Git
+- An LLM API key (Gemini, OpenAI, Anthropic, or Grok)
 
-### Backend Setup
+### Quickest Way (Recommended)
+
+```bash
+# Clone your fork
+git clone https://github.com/YOUR_USERNAME/TrustLens.git
+cd TrustLens
+
+# One command — installs everything, runs setup wizard, starts both servers
+chmod +x start.sh
+./start.sh
+```
+
+The `start.sh` script handles virtual env detection, dependency installation, LLM provider setup wizard, and launches both backend (port 3010) and frontend (port 5173).
+
+### Manual Setup
+
+#### Backend
 
 ```bash
 # Clone your fork
@@ -86,21 +104,21 @@ git clone https://github.com/YOUR_USERNAME/TrustLens.git
 cd TrustLens
 
 # Create virtual environment
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 
-# Install in development mode
+# Install dependencies
 pip install -r requirements.txt
-pip install -e ".[dev]"
 
-# Install Playwright
-playwright install chromium
+# Install Playwright browser
+python3 -m playwright install chromium
 
-# Copy environment config
+# Copy environment config & configure your LLM provider
 cp .env.example .env
+# Edit .env → set TRUSTLENS_AI_PROVIDER and your API key
 ```
 
-### Frontend Setup
+#### Frontend
 
 ```bash
 cd frontend
@@ -108,15 +126,17 @@ npm install
 npm run dev
 ```
 
-### Running the Full Stack
+#### Running the Full Stack (Manual)
 
 ```bash
-# Terminal 1: Backend
-uvicorn trustlens.main:app --reload
+# Terminal 1: Backend (PYTHONPATH=src is required)
+PYTHONPATH=src python3 -m uvicorn trustlens.main:app --host 0.0.0.0 --port 8000 --reload
 
 # Terminal 2: Frontend
 cd frontend && npm run dev
 ```
+
+> **Note:** When using `./start.sh`, the backend runs on port **3010**. When starting manually, you can choose any port (default example uses **8000**).
 
 ---
 
@@ -160,35 +180,34 @@ src/trustlens/
 
 ### Python
 
-- **Style:** Follow [PEP 8](https://pep8.org/) with [Ruff](https://docs.astral.sh/ruff/) as the linter/formatter
+- **Style:** Follow [PEP 8](https://pep8.org/)
 - **Type hints:** Required for all function signatures
 - **Docstrings:** Google style for public functions and classes
-- **Imports:** Use `from __future__ import annotations` in all modules
+- **Async:** Use `async def` for all I/O-bound functions
 - **Line length:** 100 characters max
-- **Naming:** snake_case for functions/variables, PascalCase for classes
+- **Naming:** `snake_case` for functions/variables, `PascalCase` for classes
+- **Pydantic v2:** Use `BaseModel` for all data structures
 
 ```bash
-# Check style
-ruff check src/
+# Verify imports work
+PYTHONPATH=src python3 -c "from trustlens.main import app; print('OK')"
 
-# Auto-format
-ruff format src/
-
-# Type checking
-mypy src/
+# Run the backend to check for errors
+PYTHONPATH=src python3 -m uvicorn trustlens.main:app --host 0.0.0.0 --port 8000
 ```
 
 ### TypeScript/React (Frontend)
 
-- **Style:** ESLint + Prettier (configured in the project)
+- **Framework:** React 19 with TypeScript 5.9
+- **Styling:** Tailwind CSS v4 (terminal/hacker theme — green `#00ff41`, cyan `#00ffff`)
+- **Icons:** Lucide React
 - **Components:** Functional components with hooks
-- **State:** React hooks (useState, useEffect, useCallback)
-- **Types:** TypeScript strict mode
+- **State:** React hooks (`useState`, `useEffect`, `useCallback`)
+- **Routing:** React Router v7
 
 ```bash
 cd frontend
-npm run lint
-npm run format
+npm run build    # Type-check + build
 ```
 
 ### Commit Messages
@@ -212,16 +231,16 @@ chore: update dependencies
 
 ```bash
 # All tests
-pytest
+PYTHONPATH=src pytest
 
 # With coverage
-pytest --cov=trustlens --cov-report=html
+PYTHONPATH=src pytest --cov=trustlens --cov-report=html
 
 # Specific module
-pytest tests/test_scoring.py
+PYTHONPATH=src pytest tests/test_scoring.py
 
 # Verbose
-pytest -v
+PYTHONPATH=src pytest -v
 ```
 
 ### Writing Tests
@@ -335,10 +354,10 @@ What should happen instead.
 
 **Environment**
 
-- OS: macOS 14.2
-- Python: 3.12.1
-- TrustLens: v0.2.0
-- AI Provider: Gemini (gemini-2.5-flash)
+- OS: [e.g. macOS 15, Ubuntu 24.04]
+- Python: [e.g. 3.11, 3.12]
+- Node.js: [e.g. 20, 22]
+- AI Provider: [e.g. Gemini (gemini-2.5-flash)]
 
 **Logs**
 ```
@@ -357,7 +376,7 @@ Paste relevant log output here
 
 Instead, please report security issues privately:
 
-1. Email: security@trustlens.dev (or maintainer email)
+1. Contact the maintainer via GitHub ([@abhishekayu](https://github.com/abhishekayu))
 2. Include a detailed description and reproduction steps
 3. Allow reasonable time for a fix before public disclosure
 
@@ -371,15 +390,18 @@ All contributors are recognized in our releases. Significant contributions may b
 
 ### Contribution Areas
 
-| Area          | Skills Needed                | Impact |
-| ------------- | ---------------------------- | ------ |
-| Core engine   | Python, async, security      | High   |
-| AI providers  | LLM APIs, prompt engineering | High   |
-| Frontend      | React, TypeScript, UI/UX     | Medium |
-| Documentation | Technical writing            | Medium |
-| Testing       | Python, pytest               | Medium |
-| DevOps        | Docker, CI/CD                | Medium |
-| Research      | Security, ML, NLP            | High   |
+| Area                | Skills Needed                         | Impact |
+| ------------------- | ------------------------------------- | ------ |
+| Area                | Skills Needed                         | Impact |
+| ------------------- | ------------------------------------- | ------ |
+| Analysis engines    | Python, async, security               | High   |
+| AI providers        | LLM APIs, prompt engineering          | High   |
+| Frontend            | React 19, TypeScript, Tailwind CSS v4 | Medium |
+| Documentation       | Technical writing                     | Medium |
+| Testing             | Python, pytest                        | Medium |
+| DevOps              | Docker, CI/CD, shell scripting        | Medium |
+| Security research   | Phishing, malware, threat intel       | High   |
+| Browser extension   | WebExtension APIs, JS                 | High   |
 
 ---
 
