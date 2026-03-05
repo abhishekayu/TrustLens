@@ -14,11 +14,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/assets/scan-page.png" alt="TrustLens Scan Page" width="720" />
-</p>
-
-<p align="center">
-  <img src="docs/assets/results-page.png" alt="TrustLens Results Page" width="720" />
+  <img src="https://github.com/user-attachments/assets/70df1827-afa7-4b10-b9ec-eab7f49918fa" alt="TrustLens Scan Page" width="720" />
 </p>
 
 ---
@@ -563,7 +559,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 ---
 
 <p align="center">
-  <img src="docs/assets/developer-info.png" alt="Designed & Developed by Abhishek Verma" width="520" />
+  <img src="https://github.com/user-attachments/assets/be4e31e1-ef1e-430f-b9da-500692100e64" alt="Designed & Developed by Abhishek Verma" width="520" />
 </p>
 
 <p align="center">
