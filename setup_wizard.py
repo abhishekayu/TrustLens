@@ -187,21 +187,18 @@ def _clear_wizard_config() -> None:
 
 def _print_banner() -> None:
     banner = f"""
-{CYAN}{BOLD}╔══════════════════════════════════════════════════════════════╗
-║                                                              ║
-║   ████████╗██████╗ ██╗   ██╗███████╗████████╗                ║
-║   ╚══██╔══╝██╔══██╗██║   ██║██╔════╝╚══██╔══╝                ║
-║      ██║   ██████╔╝██║   ██║███████╗   ██║                   ║
-║      ██║   ██╔══██╗██║   ██║╚════██║   ██║                   ║
-║      ██║   ██║  ██║╚██████╔╝███████║   ██║                   ║
-║      ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝                   ║
-║                                                              ║
-║          {WHITE}L E N S   A I{CYAN}   Setup Wizard                      ║
-║          {DIM}Explainable URL Trust Intelligence{RESET}{CYAN}{BOLD}                ║
-║                                                              ║
-║          {DIM}by Abhishek Verma @abhishekayu{RESET}{CYAN}{BOLD}                    ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝{RESET}
+{CYAN}{BOLD}   ████████╗██████╗ ██╗   ██╗███████╗████████╗
+   ╚══██╔══╝██╔══██╗██║   ██║██╔════╝╚══██╔══╝
+      ██║   ██████╔╝██║   ██║███████╗   ██║
+      ██║   ██╔══██╗██║   ██║╚════██║   ██║
+      ██║   ██║  ██║╚██████╔╝███████║   ██║
+      ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝
+
+          {WHITE}L E N S   A I{CYAN}   Setup Wizard
+          {DIM}Explainable URL Trust Intelligence{RESET}
+
+          {DIM}by Abhishek Verma @abhishekayu{RESET}
+{RESET}
 """
     print(banner)
 
